@@ -1,0 +1,216 @@
+{
+  "cursos": [
+    {
+      "nombre": "CURSO INTEGRADOR I: SISTEMAS - SOFTWARE",
+      "ciclo": 6,
+      "secciones": [
+        {
+          "seccion": "11335",
+          "docente": "GONZALES SAJI,FREDDY ORLANDO",
+          "horario": [
+            "Martes : 20:15 - 21:45",
+            "Viernes : 20:15 - 21:45"
+          ]
+        },
+        {
+          "seccion": "11288",
+          "docente": "GONZALES SAJI,FREDDY ORLANDO",
+          "horario": [
+            "Martes : 14:00 - 15:30",
+            "Viernes : 14:00 - 15:30"
+          ]
+        },
+        {
+          "seccion": "7272",
+          "docente": "NIETO VALENCIA,RENE ALONSO",
+          "horario": [
+            "Martes : 08:45 - 10:15",
+            "Jueves : 08:45 - 10:15"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "HERRAMIENTAS DE DESARROLLO",
+      "ciclo": 7,
+      "secciones": [
+        {
+          "seccion": "12242",
+          "docente": "RAMIREZ TICONA,JUAN",
+          "horario": [
+            "Miercoles : 12:15 - 13:45",
+            "Sabado : 12:15 - 13:45"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "DESARROLLO WEB INTEGRADO",
+      "ciclo": 7,
+      "secciones": [
+        {
+          "seccion": "12240",
+          "docente": "VALENCIA GALLEGOS,OMAR JULIO",
+          "horario": [
+            "Miercoles : 14:30 - 16:45"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "DISEÑO DE PRODUCTOS Y SERVICIOS",
+      "ciclo": 7,
+      "secciones": [
+        {
+          "seccion": "12292",
+          "docente": "MALDONADO QUISPE,PERCY",
+          "horario": [
+            "Sabado : 17:00 - 19:15"
+          ]
+        },
+        {
+          "seccion": "12279",
+          "docente": "FERNANDEZ CATALAN,JULIO EDZEL",
+          "horario": [
+            "Viernes : 14:30 - 16:45"
+          ]
+        },
+        {
+          "seccion": "12262",
+          "docente": "MALDONADO QUISPE,PERCY",
+          "horario": [
+            "Miercoles : 07:00 - 09:15"
+          ]
+        },
+        {
+          "seccion": "12243",
+          "docente": "MALDONADO QUISPE,PERCY",
+          "horario": [
+            "Jueves : 07:00 - 09:15"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "DISEÑO E IMPLEMENTACIÓN DE ARQUITECTURA EMPRESARIAL",
+      "ciclo": 8,
+      "secciones": [
+        {
+          "seccion": "12893",
+          "docente": "CHAVEZ CUARITE,DUILIO ANDRE",
+          "horario": [
+            "Lunes : 17:00 - 18:30",
+            "Jueves : 17:00 - 18:30"
+          ]
+        },
+        {
+          "seccion": "12881",
+          "docente": "BEGAZO ARENAS,OSCAR ALFREDO",
+          "horario": [
+            "Martes : 20:15 - 21:45",
+            "Viernes : 20:15 - 21:45"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "GESTIÓN DEL SERVICIO TI",
+      "ciclo": 8,
+      "secciones": [
+        {
+          "seccion": "12882",
+          "docente": "CALLO AGUILAR,ALEJANDRA CRISTINA",
+          "horario": [
+            "Lunes : 17:00 - 18:30",
+            "Jueves : 17:00 - 18:30"
+          ]
+        },
+        {
+          "seccion": "12855",
+          "docente": "GÁLVEZ GÁLVEZ,DAVID ARTHUR",
+          "horario": [
+            "Martes : 10:30 - 12:00",
+            "Viernes : 10:30 - 12:00"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "NEGOCIACIÓN Y NARRATIVA",
+      "ciclo": 8,
+      "secciones": [
+        {
+          "seccion": "12897",
+          "docente": "ESCALANTE ARENAS,MARIA ANGELA",
+          "horario": [
+            "Viernes : 17:00 - 18:30"
+          ]
+        },
+        {
+          "seccion": "12892",
+          "docente": "ESCALANTE ARENAS,MARIA ANGELA",
+          "horario": [
+            "Miercoles : 17:00 - 18:30"
+          ]
+        },
+        {
+          "seccion": "12879",
+          "docente": "ESCALANTE ARENAS,MARIA ANGELA",
+          "horario": [
+            "Martes : 17:00 - 18:30"
+          ]
+        },
+        {
+          "seccion": "12860",
+          "docente": "VIZA CALISAYA,ENZO ARTURO",
+          "horario": [
+            "Miercoles : 14:00 - 15:30"
+          ]
+        },
+        {
+          "seccion": "12859",
+          "docente": "ESCALANTE ARENAS,MARIA ANGELA",
+          "horario": [
+            "Martes : 14:00 - 15:30"
+          ]
+        },
+        {
+          "seccion": "12858",
+          "docente": "ESCALANTE ARENAS,MARIA ANGELA",
+          "horario": [
+            "Viernes : 14:00 - 15:30"
+          ]
+        },
+        {
+          "seccion": "12853",
+          "docente": "ESCALANTE ARENAS,MARIA ANGELA",
+          "horario": [
+            "Lunes : 14:00 - 15:30"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "INNOVACIÓN Y TRANSFORMACIÓN DIGITAL",
+      "ciclo": 8,
+      "secciones": [
+        {
+          "seccion": "12894",
+          "docente": "ALFARO CASAS,LUIS ALBERTO",
+          "horario": [
+            "Miercoles : 20:15 - 21:45",
+            "Viernes : 20:15 - 21:45"
+          ]
+        },
+        {
+          "seccion": "12883",
+          "docente": "NIETO VALENCIA,RENE ALONSO",
+          "horario": [
+            "Miercoles : 17:00 - 18:30",
+            "Sabado : 17:00 - 18:30"
+          ]
+        }
+      ]
+    }
+  ]
+}
