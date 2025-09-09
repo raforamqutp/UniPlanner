@@ -35,4 +35,11 @@ public class DemoService {
     public CursoResponse getDemoCursos() {
         return data;
     }
+
+    public CursoResponse getCursosPorCiclo(int ciclo) {
+        List<Curso> filtrados = data.getCursos().stream()
+                .filter(c -> c.getCiclo() == ciclo)
+                .toList();
+        return new CursoResponse(filtrados);
+    }
 }

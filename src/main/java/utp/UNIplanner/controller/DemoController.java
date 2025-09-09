@@ -1,8 +1,7 @@
 package utp.UNIplanner.controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
-import java.util.List;
-import utp.UNIplanner.model.Curso;
 import utp.UNIplanner.model.CursoResponse;
 import utp.UNIplanner.service.DemoService;
 
@@ -19,5 +18,10 @@ public class DemoController {
     @GetMapping("/demo")
     public CursoResponse getDemo() {
         return demoService.getDemoCursos();
+    }
+
+    @GetMapping("/cursos/ciclo/{ciclo}")
+    public CursoResponse getCursosPorCiclo(@PathVariable int ciclo) {
+        return demoService.getCursosPorCiclo(ciclo);
     }
 }
