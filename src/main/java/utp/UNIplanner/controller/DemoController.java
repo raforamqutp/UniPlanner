@@ -24,4 +24,9 @@ public class DemoController {
     public CursoResponse getCursosPorCiclo(@PathVariable int ciclo) {
         return demoService.getCursosPorCiclo(ciclo);
     }
+
+    @GetMapping("/cursos/nombre/{nombre}")
+    public CursoResponse getCursosPorNombre(@PathVariable String nombre) {
+        return demoService.getCursosPorNombre(nombre);
+    }
 }

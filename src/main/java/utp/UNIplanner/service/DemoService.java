@@ -42,4 +42,12 @@ public class DemoService {
                 .toList();
         return new CursoResponse(filtrados);
     }
+
+    public CursoResponse getCursosPorNombre(String nombre) {
+        String nombreLower = nombre.toLowerCase();
+        List<Curso> filtrados = data.getCursos().stream()
+                .filter(c -> c.getNombre().toLowerCase().contains(nombreLower))
+                .toList();
+        return new CursoResponse(filtrados);
+    }
 }
