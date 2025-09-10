@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${titulo}">Cursos</title>
+    <style>
+        body {
+            font-family: "Segoe UI", Roboto, sans-serif;
+            background-color: #f7f9fc;
+            margin: 0;
+            padding: 0;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            background-color: #1e3a8a;
+            padding: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            padding: 0.5rem 0.8rem;
+            transition: background 0.2s ease;
+            border-radius: 6px;
+        }
+
+        nav a:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        header {
+            text-align: center;
+            padding: 1rem;
+            color: #1e3a8a;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+            padding: 2rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+        }
+
+        .curso-nombre {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #1e3a8a;
+        }
+
+        .ciclo {
+            font-size: 0.9rem;
+            color: #555;
+            margin-bottom: 1rem;
+        }
+
+        .seccion {
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            border-left: 3px solid #1e3a8a;
+            background-color: #f1f5f9;
+            border-radius: 6px;
+        }
+
+        .docente {
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 0.3rem;
+        }
+
+        .horario {
+            font-size: 0.85rem;
+            color: #555;
+            margin: 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            nav {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            nav a {
+                text-align: center;
+                padding: 0.8rem;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a th:href="@{/cursos}">Todos</a>
+        <a th:href="@{/datos/cursos/ciclo/6}">Por Ciclo</a>
+        <a th:href="@{/datos/cursos/nombre/software}">Por Nombre</a>
+    </nav>
+
+    <header>
+        <h1 th:text="${titulo}">Cursos</h1>
+    </header>
+
+    <div class="container">
+        <div class="card" th:each="curso : ${cursos}">
+            <div class="curso-nombre" th:text="${curso.nombre}"></div>
+            <div class="ciclo">Ciclo: <span th:text="${curso.ciclo}"></span></div>
+
+            <div class="seccion" th:each="seccion : ${curso.secciones}">
+                <div class="docente">Docente: <span th:text="${seccion.docente}"></span></div>
+                <p class="horario" th:each="h : ${seccion.horario}" th:text="${h}"></p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
