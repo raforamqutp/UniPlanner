@@ -20,7 +20,7 @@ public class CursoViewController {
         this.demoService = demoService;
     }
 
-    // Para ostrar todos los cursos
+    // Mostrar todos los cursos
     @GetMapping("/cursos")
     public String verCursos(Model model) {
         model.addAttribute("titulo", "Todos los Cursos");
@@ -28,22 +28,23 @@ public class CursoViewController {
         return "cursos";
     }
 
-    // Para mostrar cursos por ciclo
-    @GetMapping("/datos/cursos/ciclo/{ciclo}")
+    // Mostrar cursos por ciclo
+    @GetMapping("/cursos/ciclo/{ciclo}")
     public String verCursosPorCiclo(@PathVariable int ciclo, Model model) {
         model.addAttribute("titulo", "Cursos del Ciclo " + ciclo);
         model.addAttribute("cursos", demoService.getCursosPorCiclo(ciclo).getCursos());
         return "cursos";
     }
 
-    // Para mostrar cursos por nombre
-    @GetMapping("/datos/cursos/nombre/{nombre}")
+    // Mostrar cursos por nombre
+    @GetMapping("/cursos/nombre/{nombre}")
     public String verCursosPorNombre(@PathVariable String nombre, Model model) {
         model.addAttribute("titulo", "Cursos que coinciden con: \"" + nombre + "\"");
         model.addAttribute("cursos", demoService.getCursosPorNombre(nombre).getCursos());
         return "cursos";
     }
-    
+
+    // Búsqueda avanzada con filtros
     @GetMapping("/cursos/buscar")
     public String buscarCursos(
             @RequestParam(required = false) String nombre,
@@ -69,5 +70,4 @@ public class CursoViewController {
         model.addAttribute("size", size);
         return "cursos";
     }
-
 }
