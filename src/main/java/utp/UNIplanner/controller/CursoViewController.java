@@ -1,10 +1,14 @@
 package utp.UNIplanner.controller;
 
+import java.util.Optional;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
+import utp.UNIplanner.model.CursoResponse;
 import utp.UNIplanner.service.DemoService;
 
 @Controller
@@ -39,4 +43,31 @@ public class CursoViewController {
         model.addAttribute("cursos", demoService.getCursosPorNombre(nombre).getCursos());
         return "cursos";
     }
+    
+    @GetMapping("/cursos/buscar")
+    public String buscarCursos(
+            @RequestParam(required = false) String nombre,
+            @RequestParam(required = false) Integer ciclo,
+            @RequestParam(required = false) String docente,
+            @RequestParam(required = false) String horario,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            Model model) {
+
+        CursoResponse response = demoService.buscarCursosPaginado(
+                Optional.ofNullable(nombre),
+                Optional.ofNullable(ciclo),
+                Optional.ofNullable(docente),
+                Optional.ofNullable(horario),
+                page,
+                size
+        );
+
+        model.addAttribute("titulo", "Resultados de Búsqueda");
+        model.addAttribute("cursos", response.getCursos());
+        model.addAttribute("page", page);
+        model.addAttribute("size", size);
+        return "cursos";
+    }
+
 }
