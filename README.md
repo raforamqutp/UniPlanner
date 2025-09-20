@@ -1,5 +1,7 @@
 # UNIplanner
 
+**Current Version: 0.3**
+
 UNIplanner es una aplicación desarrollada en **Java 21** utilizando **Spring Boot**, **Maven** y **Thymeleaf**.  
 El objetivo del proyecto es gestionar y visualizar cursos a partir de un archivo JSON, ofreciendo tanto una interfaz web como endpoints REST para consumo de datos en formato JSON.  
 
