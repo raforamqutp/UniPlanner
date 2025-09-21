@@ -31,6 +31,12 @@ El objetivo del proyecto es gestionar y visualizar cursos a partir de un archivo
 
 ---
 
+## Funcionalidades futuras
+
+- Seleccionar cursos para horario
+
+---
+
 ## Rutas disponibles
 
 ### Vistas (Thymeleaf)
