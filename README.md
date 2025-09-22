@@ -95,3 +95,6 @@ Clonar el repositorio, compilar y ejecutar la aplicación con Maven:
 
 ```bash
 mvn spring-boot:run
+```
+
+O también ir a `Releases` y descargar la última versión.
