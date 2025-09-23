@@ -1,4 +1,5 @@
 package utp.UNIplanner.controller;
+
 import java.util.Optional;
 
 import org.springframework.web.bind.annotation.GetMapping;
@@ -9,9 +10,8 @@ import org.springframework.web.bind.annotation.RestController;
 import utp.UNIplanner.model.CursoResponse;
 import utp.UNIplanner.service.DemoService;
 
-
 @RestController
-@RequestMapping("/api/cursos")
+@RequestMapping("/api/cursos") // Ruta base para todas las peticiones de cursos
 public class DemoController {
 
     private final DemoService demoService;
@@ -22,17 +22,17 @@ public class DemoController {
 
     @GetMapping("/demo")
     public CursoResponse getDemo() {
-        return demoService.getDemoCursos();
+        return demoService.getDemoCursos(); // Devuelve todos los cursos
     }
 
     @GetMapping("/ciclo/{ciclo}")
     public CursoResponse getCursosPorCiclo(@PathVariable int ciclo) {
-        return demoService.getCursosPorCiclo(ciclo);
+        return demoService.getCursosPorCiclo(ciclo); // Devuelve los cursos por ciclo
     }
 
     @GetMapping("/nombre/{nombre}")
     public CursoResponse getCursosPorNombre(@PathVariable String nombre) {
-        return demoService.getCursosPorNombre(nombre);
+        return demoService.getCursosPorNombre(nombre); // Devuelve los cursos por nombre
     }
 
     @GetMapping("/buscar")
