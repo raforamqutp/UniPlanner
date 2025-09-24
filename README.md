@@ -28,6 +28,7 @@ El objetivo del proyecto es gestionar y visualizar cursos a partir de un archivo
 - Búsqueda avanzada con múltiples filtros combinados.
 - Paginación en los resultados de búsqueda.
 - API REST para acceder a los datos de cursos en formato JSON.
+- Se puede seleccionar cursos y "guardarlos"
 
 ---
 
