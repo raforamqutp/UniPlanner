@@ -5,16 +5,20 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import utp.UNIplanner.model.Curso;
 import utp.UNIplanner.model.CursoResponse;
+import utp.UNIplanner.model.Seccion;
 
 @Service // Indica que esta clase es un servicio de Spring y debe ser gestionada por el contenedor de dependencias.
 public class DemoService {
 
     private CursoResponse data; // Esta variable almacenará los datos de los cursos cargados desde un archivo JSON.
+    private List<Seccion> seleccionActual = new ArrayList()<>();
+
 
     @PostConstruct // Este método se ejecuta automáticamente después de que el servicio es inicializado.
     public void loadData() {
