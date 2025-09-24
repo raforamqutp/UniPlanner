@@ -11,13 +11,12 @@ import org.springframework.stereotype.Service;
 import utp.UNIplanner.controller.SeleccionResponse;
 import utp.UNIplanner.model.Seccion;
 
+
 @Service
 public class SeleccionService {
 
     private final DemoService demoService;
-
-    // Lista segura para concurrencia, almacena secciones seleccionadas
-    private final List<Seccion> seleccionados = new CopyOnWriteArrayList()<>();
+    private final List<Seccion> seleccionados = new CopyOnWriteArrayList<>();
 
     public SeleccionService(DemoService demoService) {
         this.demoService = demoService;
@@ -25,7 +24,7 @@ public class SeleccionService {
 
     // Seleccionar secciones por sus códigos
     public SeleccionResponse seleccionarSecciones(List<String> codigos) {
-        List<Seccion> nuevas = new ArrayList()<>();
+        List<Seccion> nuevas = new ArrayList<>();
         List<String> mensajes = new ArrayList<>();
 
         // Buscar secciones en los cursos existentes
@@ -63,19 +62,21 @@ public class SeleccionService {
         seleccionados.clear();
     }
 
-    // Algoritmo de detección de choques simples basado en igualdad de string
+    // Detección simple de choques basada en igualdad exacta de cadenas de horario
     private List<String> detectarChoques(List<Seccion> secciones) {
         List<String> conflictos = new ArrayList<>();
 
         for (int i = 0; i < secciones.size(); i++) {
             for (int j = i + 1; j < secciones.size(); j++) {
-                for (String h1 : secciones.get(i).getHorario()) {
-                    for (String h2 : secciones.get(j).getHorario()) {
+                Seccion a = secciones.get(i);
+                Seccion b = secciones.get(j);
+                for (String h1 : a.getHorario()) {
+                    for (String h2 : b.getHorario()) {
                         if (h1.equals(h2)) {
                             conflictos.add("Choque entre sección " +
-                                    secciones.get(i).getSeccion() +
+                                    a.getSeccion() +
                                     " y sección " +
-                                    secciones.get(j).getSeccion() +
+                                    b.getSeccion() +
                                     " en horario: " + h1);
                         }
                     }

@@ -16,7 +16,7 @@ import utp.UNIplanner.service.DemoService;
 import utp.UNIplanner.service.SeleccionService;
 
 @RestController
-@RequestMapping("/api/cursos") // Ruta base para cursos
+@RequestMapping("/api/cursos")
 public class DemoController {
 
     private final DemoService demoService;
@@ -29,17 +29,17 @@ public class DemoController {
 
     @GetMapping("/demo")
     public CursoResponse getDemo() {
-        return demoService.getDemoCursos(); // Devuelve todos los cursos
+        return demoService.getDemoCursos();
     }
 
     @GetMapping("/ciclo/{ciclo}")
     public CursoResponse getCursosPorCiclo(@PathVariable int ciclo) {
-        return demoService.getCursosPorCiclo(ciclo); // Devuelve los cursos por ciclo
+        return demoService.getCursosPorCiclo(ciclo);
     }
 
     @GetMapping("/nombre/{nombre}")
     public CursoResponse getCursosPorNombre(@PathVariable String nombre) {
-        return demoService.getCursosPorNombre(nombre); // Devuelve los cursos por nombre
+        return demoService.getCursosPorNombre(nombre);
     }
 
     @GetMapping("/buscar")
@@ -59,8 +59,6 @@ public class DemoController {
                 size
         );
     }
-
-    
 
     @PostMapping("/seleccion")
     public SeleccionResponse seleccionar(@RequestBody List<String> codigos) {
