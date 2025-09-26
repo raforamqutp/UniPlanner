@@ -34,6 +34,8 @@ El objetivo del proyecto es gestionar y visualizar cursos a partir de un archivo
 
 ## Funcionalidades futuras
 - Crear horario final
+- Nuevos algoritmos de búsqueda / sorting
+- Comparar tiempo computacional de dichos algoritmos
 
 ---
 
