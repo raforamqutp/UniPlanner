@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import utp.UNIplanner.controller.SeleccionResponse;
 import utp.UNIplanner.model.Seccion;
 
-
 @Service
 public class SeleccionService {
 
