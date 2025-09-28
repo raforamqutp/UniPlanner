@@ -19,4 +19,9 @@ public class CursoResponse {
     public void setCursos(List<Curso> cursos) {
         this.cursos = cursos;
     }
+
+	public void setMessage(String string) {
+		// TODO Auto-generated method stub
+		
+	}
 }
