@@ -12,6 +12,18 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Pruebas unitarias para la clase DemoService, que simula la carga y búsqueda de cursos
+ * desde un archivo JSON en la aplicación UNIplanner.
+ *
+ * Estas pruebas verifican que:
+ * - Se carguen correctamente los cursos desde el archivo.
+ * - Se puedan filtrar cursos por ciclo, nombre, docente y horario.
+ * - Funcione la búsqueda combinada y la paginación de resultados.
+ *
+ * Ayudan a asegurar que las funciones principales del servicio trabajen como se espera.
+ */
+
 @SpringBootTest
 class DemoServiceTest {
 
