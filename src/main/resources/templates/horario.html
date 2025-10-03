@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+.schedule-container {
+  max-width: 100%;
+  overflow-x: auto;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
+.time-format-toggle {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 15px;
+}
+
+.schedule-grid {
+  display: grid;
+  grid-template-columns: 120px repeat(7, 1fr);
+  gap: 1px;
+  background-color: #e9ecef;
+  border: 1px solid #e9ecef;
+}
+
+.schedule-corner, 
+.schedule-header, 
+.schedule-time, 
+.schedule-cell {
+  padding: 10px;
+  background-color: white;
+}
+
+.schedule-header {
+  font-weight: bold;
+  text-align: center;
+  background-color: #f8f9fa;
+  position: sticky;
+  top: 0;
+}
+
+.schedule-time {
+  font-size: 0.85rem;
+  color: #495057;
+  border-right: 1px solid #e9ecef;
+  display: flex;
+  align-items: center;
+}
+
+.schedule-cell {
+  min-height: 40px;
+  transition: background-color 0.2s;
+}
+
+.schedule-cell:hover {
+  background-color: #f8f9fa;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .schedule-grid {
+    grid-template-columns: 80px repeat(7, 1fr);
+    font-size: 0.8rem;
+  }
+  
+  .schedule-corner, 
+  .schedule-header, 
+  .schedule-time, 
+  .schedule-cell {
+    padding: 5px;
+  }
+}
+
+/* ... estilos anteriores ... */
+
+.schedule-event {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  bottom: 2px;
+  border-radius: 4px;
+  padding: 3px;
+  color: white;
+  font-weight: bold;
+  font-size: 0.75rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  height: 100%;
+  width: 100%;
+  font-size: 0.7rem;
+  box-sizing: border-box;
+  text-align: center;
+  border-radius: 4px;
+}
+
+.schedule-cell {
+  position: relative;
+  min-height: 40px;
+  transition: background-color 0.2s;
+}
+</style>
+<title>Horario layout - demo</title>
+</head>
+<body>
+<div class="col-md-8">
+    <div class="schedule-container">
+        <div class="schedule-grid">
+            <!-- Encabezados de días -->
+            <div class="schedule-corner"></div>
+            <div class="schedule-header">Lunes</div>
+            <div class="schedule-header">Martes</div>
+            <div class="schedule-header">Miércoles</div>
+            <div class="schedule-header">Jueves</div>
+            <div class="schedule-header">Viernes</div>
+            <div class="schedule-header">Sábado</div>
+            <div class="schedule-header">Domingo</div>
+
+            <!-- Filas de horarios -->
+            <div class="schedule-time">07:00 - 07:30</div>
+            <div class="schedule-cell"></div>
+            <div class="schedule-cell"></div>
+            <div class="schedule-cell"></div>
+            <div class="schedule-cell"></div>
+            <div class="schedule-cell"></div>
+            <div class="schedule-cell"></div>
+            <div class="schedule-cell"></div>
+
+            <div class="schedule-time">07:30 - 08:00</div>
+            <div class="schedule-cell"></div>
+            <div class="schedule-cell"></div>
+            <div class="schedule-cell"></div>
+            <div class="schedule-cell"></div>
+            <div class="schedule-cell"></div>
+            <div class="schedule-cell"></div>
+            <div class="schedule-cell"></div>
+
+            <!-- Más filas de horarios vacías... -->
+            
+            <!-- Fila con evento -->
+            <div class="schedule-time">20:30 - 21:00</div>
+            <div class="schedule-cell"></div>
+            <div class="schedule-cell">
+                <div class="schedule-event" title="CURSO INTEGRADOR I: SISTEMAS - SOFTWARE - GONZALES SAJI,FREDDY ORLANDO" style="background-color: rgb(255, 154, 162);">
+                    <div class="event-text">
+                        CURSO INTEGRADOR I: SISTEMAS - SOFTWARE<br>
+                        Martes : 20:15 - 21:45<br>
+                        GONZALES SAJI,FREDDY ORLANDO
+                    </div>
+                </div>
+            </div>
+            <div class="schedule-cell"></div>
+            <div class="schedule-cell"></div>
+            <div class="schedule-cell">
+                <div class="schedule-event" title="CURSO INTEGRADOR I: SISTEMAS - SOFTWARE - GONZALES SAJI,FREDDY ORLANDO" style="background-color: rgb(255, 154, 162);">
+                    <div class="event-text">
+                        CURSO INTEGRADOR I: SISTEMAS - SOFTWARE<br>
+                        Viernes : 20:15 - 21:45<br>
+                        GONZALES SAJI,FREDDY ORLANDO
+                    </div>
+                </div>
+            </div>
+            <div class="schedule-cell"></div>
+            <div class="schedule-cell"></div>
+
+            <!-- Más filas con eventos similares... -->
+            
+            <div class="schedule-time">23:30 - 24:00</div>
+            <div class="schedule-cell"></div>
+            <div class="schedule-cell"></div>
+            <div class="schedule-cell"></div>
+            <div class="schedule-cell"></div>
+            <div class="schedule-cell"></div>
+            <div class="schedule-cell"></div>
+            <div class="schedule-cell"></div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
