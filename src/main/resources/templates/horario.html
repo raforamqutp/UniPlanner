@@ -12,12 +12,6 @@
   padding: 20px;
 }
 
-.time-format-toggle {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 15px;
-}
-
 .schedule-grid {
   display: grid;
   grid-template-columns: 120px repeat(7, 1fr);
@@ -51,6 +45,7 @@
 }
 
 .schedule-cell {
+  position: relative;
   min-height: 40px;
   transition: background-color 0.2s;
 }
@@ -59,7 +54,10 @@
   background-color: #f8f9fa;
 }
 
-/* Responsive adjustments */
+.bold-hour {
+  font-weight: bold;
+}
+
 @media (max-width: 768px) {
   .schedule-grid {
     grid-template-columns: 80px repeat(7, 1fr);
@@ -73,48 +71,14 @@
     padding: 5px;
   }
 }
-
-/* ... estilos anteriores ... */
-
-.schedule-event {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  right: 2px;
-  bottom: 2px;
-  border-radius: 4px;
-  padding: 3px;
-  color: white;
-  font-weight: bold;
-  font-size: 0.75rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  height: 100%;
-  width: 100%;
-  font-size: 0.7rem;
-  box-sizing: border-box;
-  text-align: center;
-  border-radius: 4px;
-}
-
-.schedule-cell {
-  position: relative;
-  min-height: 40px;
-  transition: background-color 0.2s;
-}
 </style>
-<title>Horario layout - demo</title>
+<title>Horario layout - completo</title>
 </head>
 <body>
 <div class="col-md-8">
     <div class="schedule-container">
         <div class="schedule-grid">
-            <!-- Encabezados de días -->
+            <!-- Encabezados -->
             <div class="schedule-corner"></div>
             <div class="schedule-header">Lunes</div>
             <div class="schedule-header">Martes</div>
@@ -124,62 +88,137 @@
             <div class="schedule-header">Sábado</div>
             <div class="schedule-header">Domingo</div>
 
-            <!-- Filas de horarios -->
-            <div class="schedule-time">07:00 - 07:30</div>
-            <div class="schedule-cell"></div>
-            <div class="schedule-cell"></div>
-            <div class="schedule-cell"></div>
-            <div class="schedule-cell"></div>
-            <div class="schedule-cell"></div>
-            <div class="schedule-cell"></div>
+            <!-- Filas de horarios de 07:00 a 20:00 -->
+            <!-- Generado cada 30 min -->
+            <!-- 07:00 -->
+            <div class="schedule-time bold-hour">07:00 - 07:30</div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
             <div class="schedule-cell"></div>
 
             <div class="schedule-time">07:30 - 08:00</div>
-            <div class="schedule-cell"></div>
-            <div class="schedule-cell"></div>
-            <div class="schedule-cell"></div>
-            <div class="schedule-cell"></div>
-            <div class="schedule-cell"></div>
-            <div class="schedule-cell"></div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
             <div class="schedule-cell"></div>
 
-            <!-- Más filas de horarios vacías... -->
-            
-            <!-- Fila con evento -->
-            <div class="schedule-time">20:30 - 21:00</div>
-            <div class="schedule-cell"></div>
-            <div class="schedule-cell">
-                <div class="schedule-event" title="CURSO INTEGRADOR I: SISTEMAS - SOFTWARE - GONZALES SAJI,FREDDY ORLANDO" style="background-color: rgb(255, 154, 162);">
-                    <div class="event-text">
-                        CURSO INTEGRADOR I: SISTEMAS - SOFTWARE<br>
-                        Martes : 20:15 - 21:45<br>
-                        GONZALES SAJI,FREDDY ORLANDO
-                    </div>
-                </div>
-            </div>
-            <div class="schedule-cell"></div>
-            <div class="schedule-cell"></div>
-            <div class="schedule-cell">
-                <div class="schedule-event" title="CURSO INTEGRADOR I: SISTEMAS - SOFTWARE - GONZALES SAJI,FREDDY ORLANDO" style="background-color: rgb(255, 154, 162);">
-                    <div class="event-text">
-                        CURSO INTEGRADOR I: SISTEMAS - SOFTWARE<br>
-                        Viernes : 20:15 - 21:45<br>
-                        GONZALES SAJI,FREDDY ORLANDO
-                    </div>
-                </div>
-            </div>
-            <div class="schedule-cell"></div>
+            <div class="schedule-time bold-hour">08:00 - 08:30</div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
             <div class="schedule-cell"></div>
 
-            <!-- Más filas con eventos similares... -->
-            
-            <div class="schedule-time">23:30 - 24:00</div>
+            <div class="schedule-time">08:30 - 09:00</div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
             <div class="schedule-cell"></div>
+
+            <div class="schedule-time bold-hour">09:00 - 09:30</div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
             <div class="schedule-cell"></div>
+
+            <div class="schedule-time">09:30 - 10:00</div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
             <div class="schedule-cell"></div>
+
+            <div class="schedule-time bold-hour">10:00 - 10:30</div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
             <div class="schedule-cell"></div>
+
+            <div class="schedule-time">10:30 - 11:00</div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
             <div class="schedule-cell"></div>
+
+            <div class="schedule-time bold-hour">11:00 - 11:30</div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
             <div class="schedule-cell"></div>
+
+            <div class="schedule-time">11:30 - 12:00</div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
+            <div class="schedule-cell"></div>
+
+            <div class="schedule-time bold-hour">12:00 - 12:30</div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
+            <div class="schedule-cell"></div>
+
+            <div class="schedule-time">12:30 - 13:00</div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
+            <div class="schedule-cell"></div>
+
+            <div class="schedule-time bold-hour">13:00 - 13:30</div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
+            <div class="schedule-cell"></div>
+
+            <div class="schedule-time">13:30 - 14:00</div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
+            <div class="schedule-cell"></div>
+
+            <div class="schedule-time bold-hour">14:00 - 14:30</div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
+            <div class="schedule-cell"></div>
+
+            <div class="schedule-time">14:30 - 15:00</div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
+            <div class="schedule-cell"></div>
+
+            <div class="schedule-time bold-hour">15:00 - 15:30</div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
+            <div class="schedule-cell"></div>
+
+            <div class="schedule-time">15:30 - 16:00</div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
+            <div class="schedule-cell"></div>
+
+            <div class="schedule-time bold-hour">16:00 - 16:30</div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
+            <div class="schedule-cell"></div>
+
+            <div class="schedule-time">16:30 - 17:00</div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
+            <div class="schedule-cell"></div>
+
+            <div class="schedule-time bold-hour">17:00 - 17:30</div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
+            <div class="schedule-cell"></div>
+
+            <div class="schedule-time">17:30 - 18:00</div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
+            <div class="schedule-cell"></div>
+
+            <div class="schedule-time bold-hour">18:00 - 18:30</div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
+            <div class="schedule-cell"></div>
+
+            <div class="schedule-time">18:30 - 19:00</div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
+            <div class="schedule-cell"></div>
+
+            <div class="schedule-time bold-hour">19:00 - 19:30</div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
+            <div class="schedule-cell"></div>
+
+            <div class="schedule-time">19:30 - 20:00</div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
+            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
             <div class="schedule-cell"></div>
         </div>
     </div>
