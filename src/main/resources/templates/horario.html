@@ -224,29 +224,82 @@
     </div>
 </div>
 </body>
+
 <script>
-document.addEventListener("DOMContentLoaded", () => {
 
-  const timeElements = document.querySelectorAll(".schedule-time");
-  const bloques = [];
+class HorarioManager {
+  constructor(selectorGrid = ".schedule-grid") {
+    this.grid = document.querySelector(selectorGrid);
+    this.timeBlocks = [];
+    this.dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
+    this._parseTimeBlocks();
+  }
 
-  timeElements.forEach((el) => {
-    const texto = el.textContent.trim();
-    const match = texto.match(/(\d{2}:\d{2})\s*-\s*(\d{2}:\d{2})/);
-    if (match) {
-      bloques.push({
-        horaInicio: match[1],
-        horaFin: match[2],
-        elemento: el
-      });
+  _parseTimeBlocks() {
+    const timeElements = this.grid.querySelectorAll(".schedule-time");
+    this.timeBlocks = Array.from(timeElements).map((el) => {
+      const match = el.textContent.trim().match(/(\d{2}:\d{2})\s*-\s*(\d{2}:\d{2})/);
+      return match
+        ? { horaInicio: match[1], horaFin: match[2], elemento: el }
+        : null;
+    }).filter(Boolean);
+  }
+
+  obtenerBloques() {
+    return this.timeBlocks.map(({ horaInicio, horaFin }) => ({ horaInicio, horaFin }));
+  }
+
+  _buscarIndicePorHora(horaInicio) {
+    return this.timeBlocks.findIndex(b => b.horaInicio === horaInicio);
+  }
+
+  marcarBloque(dia, horaInicio, horaFin, name = "") {
+    const diaIndex = this.dias.indexOf(dia);
+    if (diaIndex === -1) {
+      console.error("Día inválido:", dia);
+      return;
     }
-  });
+
+    const inicioIndex = this._buscarIndicePorHora(horaInicio);
+    const finIndex = this._buscarIndicePorHora(horaFin);
+
+    if (inicioIndex === -1 || finIndex === -1 || finIndex < inicioIndex) {
+      console.error("Rango de horas inválido:", horaInicio, horaFin);
+      return;
+    }
+
+    for (let i = inicioIndex; i <= finIndex; i++) {
+      const celda = this._obtenerCelda(i, diaIndex);
+      if (celda) {
+        celda.style.backgroundColor = "#cce5ff";
+        celda.style.border = "1px solid #004085";
+        celda.style.color = "#004085";
+        if (name && i === inicioIndex) celda.textContent = name;
+      }
+    }
+  }
+
+  _obtenerCelda(filaIndex, diaIndex) {
+    const base = 1 + (filaIndex * 8);
+    return this.grid.children[base + diaIndex + 1];
+  }
+
+  generarJSON() {
+    return JSON.stringify(this.timeBlocks.map(b => ({
+      horaInicio: b.horaInicio,
+      horaFin: b.horaFin
+    })));
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  window.horario = new HorarioManager();
 
   console.log("Bloques horarios detectados:");
-  console.table(bloques.map(b => ({ "Hora Inicio": b.horaInicio, "Hora Fin": b.horaFin })));
+  console.table(window.horario.obtenerBloques());
 
-  window.obtenerBloquesHorario = () => bloques;
 });
 </script>
+
 
 </html>
