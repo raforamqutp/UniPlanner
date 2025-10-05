@@ -224,4 +224,29 @@
     </div>
 </div>
 </body>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+  const timeElements = document.querySelectorAll(".schedule-time");
+  const bloques = [];
+
+  timeElements.forEach((el) => {
+    const texto = el.textContent.trim();
+    const match = texto.match(/(\d{2}:\d{2})\s*-\s*(\d{2}:\d{2})/);
+    if (match) {
+      bloques.push({
+        horaInicio: match[1],
+        horaFin: match[2],
+        elemento: el
+      });
+    }
+  });
+
+  console.log("Bloques horarios detectados:");
+  console.table(bloques.map(b => ({ "Hora Inicio": b.horaInicio, "Hora Fin": b.horaFin })));
+
+  window.obtenerBloquesHorario = () => bloques;
+});
+</script>
+
 </html>
