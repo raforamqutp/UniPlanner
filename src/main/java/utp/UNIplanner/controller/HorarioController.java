@@ -24,12 +24,10 @@ public class HorarioController {
         this.seleccionService = seleccionService;
     }
 
-    // Vista HTML (MVC)
     @GetMapping
     public String verHorario(Model model) {
         System.out.println("=== CARGANDO PÁGINA HORARIO ===");
         
-        // Sincronizar horario con selecciones actuales
         var seleccionResponse = seleccionService.obtenerSeleccionados();
         List<Seccion> seleccionados = seleccionResponse.getSeleccionados();
         
@@ -49,13 +47,10 @@ public class HorarioController {
         return "horario";
     }
 
-    // REST endpoints
     @GetMapping("/api")
     @ResponseBody
     public HorarioResponse obtenerHorarioJSON() {
-        System.out.println("=== LLAMADA A /horario/api ===");
-        
-        // Sincronizar antes de devolver
+        System.out.println("=== LLAMADA A /horario/api ===");     
         var seleccionResponse = seleccionService.obtenerSeleccionados();
         List<Seccion> seleccionados = seleccionResponse.getSeleccionados();
         
