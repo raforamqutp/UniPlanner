@@ -81,6 +81,16 @@ El objetivo del proyecto es gestionar y visualizar cursos a partir de un archivo
 
 ---
 
+### Versión 1.0
+- **Funcionalidad de seleccionar curso + visualización horario completa:**  
+  `http://localhost:8420/cursos`  
+  ![8](resources/images/A.png)
+
+  `http://localhost:8420/horario`  
+  ![9](resources/images/B.png)
+
+---
+
 ## Requisitos
 
 - **Java 21**
