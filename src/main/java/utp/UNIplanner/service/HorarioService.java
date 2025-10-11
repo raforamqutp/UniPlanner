@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import utp.UNIplanner.model.HorarioBloque;
 import utp.UNIplanner.model.HorarioResponse;
 import utp.UNIplanner.model.Seccion;
+import utp.UNIplanner.model.Curso;
 
 import java.time.LocalTime;
 import java.util.*;
@@ -13,9 +14,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class HorarioService {
 
     private final List<HorarioBloque> bloques = new CopyOnWriteArrayList<>();
+    private final DemoService demoService;
 
-    public HorarioService() {
-        // Constructor sin dependencias
+    public HorarioService(DemoService demoService) {
+        this.demoService = demoService;
     }
 
     public HorarioResponse obtenerHorario() {
@@ -39,12 +41,25 @@ public class HorarioService {
     }
 
     private void agregarSeccionAlHorario(Seccion seccion) {
+        String nombreCurso = buscarNombreCursoPorSeccion(seccion.getSeccion());
+        
         for (String horarioStr : seccion.getHorario()) {
-            HorarioBloque bloque = parseHorarioString(horarioStr, seccion);
+            HorarioBloque bloque = parseHorarioString(horarioStr, seccion, nombreCurso);
             if (bloque != null && !existeBloque(bloque)) {
                 bloques.add(bloque);
             }
         }
+    }
+
+    private String buscarNombreCursoPorSeccion(String codigoSeccion) {
+        for (Curso curso : demoService.getDemoCursos().getCursos()) {
+            for (Seccion seccion : curso.getSecciones()) {
+                if (seccion.getSeccion().equals(codigoSeccion)) {
+                    return curso.getNombre();
+                }
+            }
+        }
+        return "Curso no encontrado";
     }
 
     private boolean existeBloque(HorarioBloque nuevoBloque) {
@@ -52,11 +67,11 @@ public class HorarioService {
             bloque.getDia().equals(nuevoBloque.getDia()) &&
             bloque.getHoraInicio().equals(nuevoBloque.getHoraInicio()) &&
             bloque.getHoraFin().equals(nuevoBloque.getHoraFin()) &&
-            bloque.getNombre().equals(nuevoBloque.getNombre())
+            Objects.equals(bloque.getNombre(), nuevoBloque.getNombre())
         );
     }
 
-    private HorarioBloque parseHorarioString(String horarioStr, Seccion seccion) {
+    private HorarioBloque parseHorarioString(String horarioStr, Seccion seccion, String nombreCurso) {
         try {
             System.out.println("Parseando horario: " + horarioStr);
             
@@ -66,7 +81,7 @@ public class HorarioService {
                 return null;
             }
             
-            String dia = partes[0].trim();
+            String dia = normalizarDia(partes[0].trim());
             String[] horarios = partes[1].split(" - ");
             if (horarios.length != 2) {
                 System.err.println("Formato de tiempo inválido: " + horarioStr);
@@ -75,14 +90,38 @@ public class HorarioService {
             
             LocalTime horaInicio = LocalTime.parse(horarios[0].trim());
             LocalTime horaFin = LocalTime.parse(horarios[1].trim());
+
+            String nombreCompleto = nombreCurso + " - " + seccion.getDocente();
             
-            String nombre = seccion.getSeccion() + " - " + seccion.getDocente();
+            HorarioBloque bloque = new HorarioBloque();
+            bloque.setDia(dia);
+            bloque.setHoraInicio(horaInicio);
+            bloque.setHoraFin(horaFin);
+            bloque.setNombre(nombreCompleto);
+            bloque.setCodigoSeccion(seccion.getSeccion());
+            bloque.setDocente(seccion.getDocente());
+            bloque.setNombreCurso(nombreCurso);
             
-            System.out.println("Bloque creado: " + dia + " " + horaInicio + "-" + horaFin + " - " + nombre);
-            return new HorarioBloque(dia, horaInicio, horaFin, nombre);
+            System.out.println("Bloque creado: " + dia + " " + horaInicio + "-" + horaFin + " - " + nombreCompleto);
+            return bloque;
         } catch (Exception e) {
             System.err.println("Error parseando horario: " + horarioStr + " - " + e.getMessage());
             return null;
+        }
+    }
+
+    private String normalizarDia(String dia) {
+        switch (dia.toLowerCase()) {
+            case "lunes": return "Lunes";
+            case "martes": return "Martes";
+            case "miercoles": 
+            case "miércoles": return "Miercoles";
+            case "jueves": return "Jueves";
+            case "viernes": return "Viernes";
+            case "sabado": 
+            case "sábado": return "Sabado";
+            case "domingo": return "Domingo";
+            default: return dia;
         }
     }
 

@@ -3,338 +3,336 @@
 <head>
 <meta charset="UTF-8">
 <title>Horario - UNIplanner</title>
-
 <style>
-body {
-  font-family: "Segoe UI", Roboto, sans-serif;
-  background-color: #f7f9fc;
-  margin: 0;
-  padding: 0;
+body { font-family: "Segoe UI", Roboto, sans-serif; background:#f7f9fc; margin:0; padding:0; }
+nav{display:flex;justify-content:space-around;align-items:center;background:#1e3a8a;padding:.8rem;}
+nav a{color:#fff;text-decoration:none;padding:.5rem .8rem;border-radius:6px}
+.header{ text-align:center;padding:1rem;color:#1e3a8a }
+.actions{ text-align:center;margin:1rem }
+.btn{ padding:.75rem 1.5rem;background:#ef4444;color:#fff;border:none;border-radius:8px;cursor:pointer;margin:0 .5rem }
+.btn-success{ background:#10b981 }
+.schedule-container{ max-width:100%; overflow-x:auto;background:#fff;border-radius:8px; padding:20px;margin:1rem; box-shadow:0 2px 10px rgba(0,0,0,.1) }
+.schedule-grid{ display:grid; grid-template-columns:120px repeat(7,1fr); gap:1px; background:#e9ecef; border:1px solid #e9ecef; position:relative; }
+.schedule-corner,.schedule-header,.schedule-time,.schedule-cell{ padding:10px;background:#fff }
+.schedule-header{ font-weight:bold;text-align:center;background:#f8f9fa; position:sticky; top:0 }
+.schedule-time{ font-size:.85rem;color:#495057;border-right:1px solid #e9ecef; display:flex;align-items:center }
+.schedule-cell{ position:relative; min-height:30px; transition:background-color .15s }
+.schedule-cell:hover{ background:#f8f9fa }
+.bold-hour{ font-weight:bold }
+.course-block{ 
+    background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); 
+    color:#fff; 
+    border-radius:4px; 
+    padding:6px; 
+    font-size:15; 
+    border-left:4px solid #4f46e5; 
+    position:absolute; 
+    left:2px; 
+    right:2px; 
+    top:2px; 
+    bottom:2px; 
+    overflow:hidden; 
+    z-index:2;
+    box-sizing:border-box;
 }
-
-nav {
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  background-color: #1e3a8a;
-  padding: 0.8rem;
-  flex-wrap: wrap;
-}
-
-nav a {
-  color: white;
-  text-decoration: none;
-  font-size: 0.95rem;
-  font-weight: 500;
-  padding: 0.5rem 0.8rem;
-  transition: background 0.2s ease;
-  border-radius: 6px;
-}
-
-nav a:hover {
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.header {
-  text-align: center;
-  padding: 1rem;
-  color: #1e3a8a;
-}
-
-.actions {
-  text-align: center;
-  margin: 1rem;
-}
-
-.btn {
-  padding: 0.75rem 1.5rem;
-  background-color: #ef4444;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background-color 0.2s;
-  margin: 0 0.5rem;
-}
-
-.btn:hover {
-  background-color: #dc2626;
-}
-
-.btn-success {
-  background-color: #10b981;
-}
-
-.btn-success:hover {
-  background-color: #059669;
-}
-
-.schedule-container {
-  max-width: 100%;
-  overflow-x: auto;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-  margin: 1rem;
-}
-
-.schedule-grid {
-  display: grid;
-  grid-template-columns: 120px repeat(7, 1fr);
-  gap: 1px;
-  background-color: #e9ecef;
-  border: 1px solid #e9ecef;
-}
-
-.schedule-corner, 
-.schedule-header, 
-.schedule-time, 
-.schedule-cell {
-  padding: 10px;
-  background-color: white;
-}
-
-.schedule-header {
-  font-weight: bold;
-  text-align: center;
-  background-color: #f8f9fa;
-  position: sticky;
-  top: 0;
-}
-
-.schedule-time {
-  font-size: 0.85rem;
-  color: #495057;
-  border-right: 1px solid #e9ecef;
-  display: flex;
-  align-items: center;
-}
-
-.schedule-cell {
-  position: relative;
-  min-height: 40px;
-  transition: background-color 0.2s;
-}
-
-.schedule-cell:hover {
-  background-color: #f8f9fa;
-}
-
-.bold-hour {
-  font-weight: bold;
-}
-
-.course-block {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border-radius: 4px;
-  padding: 8px;
-  margin: 2px;
-  font-size: 0.75rem;
-  border-left: 4px solid #4f46e5;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  right: 2px;
-  bottom: 2px;
-  z-index: 1;
-}
-
-.course-block:hover {
-  transform: scale(1.02);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-  z-index: 2;
-}
-
-.course-time {
-  font-size: 0.7rem;
-  opacity: 0.9;
-  margin-top: 2px;
-}
-
-@media (max-width: 768px) {
-  .schedule-grid {
-    grid-template-columns: 80px repeat(7, 1fr);
-    font-size: 0.8rem;
-  }
-  
-  .schedule-corner, 
-  .schedule-header, 
-  .schedule-time, 
-  .schedule-cell {
-    padding: 5px;
-  }
+.course-title{ font-weight:bold; margin-bottom:2px; font-size:15; line-height:1.1; }
+.course-info{ font-size:10; opacity:.9; line-height:1.1; }
+.course-time{ font-size:8; opacity:.8; margin-top:2px; }
+.debug-info{ background:#f0f0f0; padding:10px; margin:10px; border-radius:5px; font-family:monospace; font-size:.8rem; }
+@media (max-width:768px){ 
+    .schedule-grid{ grid-template-columns:80px repeat(7,1fr); font-size:.8rem } 
+    .schedule-corner,.schedule-header,.schedule-time,.schedule-cell{ padding:5px } 
 }
 </style>
 </head>
 <body>
-
 <nav>
-    <a th:href="@{/cursos}">Volver a Cursos</a>
-    <a th:href="@{/horario}">Actualizar Horario</a>
+  <a th:href="@{/cursos}">Volver a Cursos</a>
+  <a th:href="@{/horario}">Actualizar Horario</a>
 </nav>
 
 <div class="header">
-    <h1>Mi Horario</h1>
-    <p id="statusMessage">Cargando horario...</p>
+  <h1>Mi Horario</h1>
+  <p id="statusMessage">Cargando horario...</p>
 </div>
 
 <div class="actions">
-    <button class="btn" onclick="limpiarHorario()">Limpiar Horario</button>
-    <button class="btn btn-success" onclick="actualizarDesdeBackend()">Actualizar desde Servidor</button>
+  <button class="btn" onclick="limpiarHorario()">Limpiar Horario</button>
+  <button class="btn btn-success" onclick="actualizarDesdeBackend()">Actualizar desde Servidor</button>
+  <button class="btn" onclick="toggleDebug()">Mostrar Debug</button>
+</div>
+
+<div id="debugPanel" class="debug-info" style="display:none;">
+  <h3>Información de Debug</h3>
+  <div id="debugContent"></div>
 </div>
 
 <div class="schedule-container">
-    <div class="schedule-grid" id="scheduleGrid"></div>
+  <div class="schedule-grid" id="scheduleGrid"></div>
 </div>
 
 <script>
 class HorarioManager {
   constructor() {
-    // Días corregidos (con tildes)
-    this.dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
-    this.horas = this.generarHoras();
+    this.daysCanonical = ["Lunes","Martes","Miercoles","Jueves","Viernes","Sabado","Domingo"];
     this.grid = document.getElementById('scheduleGrid');
-    this.crearEstructuraBase();
-    this.cargarBloquesIniciales();
+    this.times = this._generarSlots("07:00", "22:00", 30);
+    this.debugContent = document.getElementById('debugContent');
+    this._buildGrid();
+    this._loadFromApi();
   }
 
-  actualizarEstado(msg) {
-    const el = document.getElementById("statusMessage");
-    if (el) el.textContent = msg;
-  }
-
-  generarHoras() {
-    const horas = [];
-    for (let h = 7; h <= 22; h++) {
-      for (let m = 0; m < 60; m += 30) {
-        const hi = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-        const nh = m === 30 ? h + 1 : h;
-        const nm = m === 30 ? 0 : 30;
-        const hf = `${String(nh).padStart(2, '0')}:${String(nm).padStart(2, '0')}`;
-        horas.push({ inicio: hi, fin: hf, display: `${hi} - ${hf}` });
-      }
+  _log(...args){ 
+    console.log(...args); 
+    if(this.debugContent) {
+      this.debugContent.innerHTML += args.join(' ') + '<br>';
     }
-    return horas;
   }
 
-  crearEstructuraBase() {
-    this.grid.innerHTML = "";
-    this.grid.appendChild(this.crearCelda("schedule-corner", "Hora \\ Día"));
-    this.dias.forEach(d => this.grid.appendChild(this.crearCelda("schedule-header", d)));
-    this.horas.forEach((hora, i) => {
-      const clase = hora.inicio.endsWith(":00") ? "schedule-time bold-hour" : "schedule-time";
-      this.grid.appendChild(this.crearCelda(clase, hora.display));
-      this.dias.forEach(() => this.grid.appendChild(this.crearCelda("schedule-cell", "")));
+  _generarSlots(start, end, stepMin){
+    const parse = t=>{ 
+        const [h,m]=t.split(':').map(Number); 
+        return h*60+m; 
+    };
+    const pad = n => String(n).padStart(2,'0');
+    const slots=[];
+    let cur = parse(start);
+    const endM = parse(end);
+    while(cur < endM){
+      const next = cur + stepMin;
+      const hh = pad(Math.floor(cur/60)); 
+      const mm = pad(cur%60);
+      const nh = pad(Math.floor(next/60)); 
+      const nm = pad(next%60);
+      slots.push({ 
+          time: `${hh}:${mm}`, 
+          display: `${hh}:${mm} - ${nh}:${nm}`, 
+          startM: cur,
+          endM: next
+      });
+      cur = next;
+    }
+    return slots;
+  }
+
+  _normalizeDay(d){
+    if(!d) return d;
+    const lower = d.toLowerCase();
+    const dayMap = {
+        'lunes': 'Lunes',
+        'martes': 'Martes', 
+        'miercoles': 'Miercoles',
+        'miércoles': 'Miercoles',
+        'jueves': 'Jueves',
+        'viernes': 'Viernes',
+        'sabado': 'Sabado',
+        'sábado': 'Sabado',
+        'domingo': 'Domingo'
+    };
+    return dayMap[lower] || d;
+  }
+
+  _buildGrid(){
+    this.grid.innerHTML = '';
+    // corner
+    this.grid.appendChild(this._celda('schedule-corner','Hora \\ Día'));
+    // headers
+    this.daysCanonical.forEach(d => this.grid.appendChild(this._celda('schedule-header', d)));
+    // rows
+    this.times.forEach(slot => {
+      const claseHora = slot.time.endsWith(':00') ? 'schedule-time bold-hour' : 'schedule-time';
+      this.grid.appendChild(this._celda(claseHora, slot.display));
+      // cells per day with data attributes
+      this.daysCanonical.forEach(day => {
+        const cel = this._celda('schedule-cell','');
+        cel.setAttribute('data-day', day);
+        cel.setAttribute('data-time', slot.time);
+        cel.setAttribute('data-start-min', slot.startM);
+        cel.setAttribute('data-end-min', slot.endM);
+        this.grid.appendChild(cel);
+      });
     });
   }
 
-  crearCelda(clase, contenido) {
-    const div = document.createElement("div");
-    div.className = clase;
-    div.textContent = contenido;
-    return div;
+  _celda(clase, text){
+    const d = document.createElement('div');
+    d.className = clase;
+    d.textContent = text;
+    return d;
   }
 
-  formatearHora(hora) {
-    if (!hora) return hora;
-    if (hora.match(/^\d{2}:\d{2}:\d{2}$/)) return hora.slice(0,5);
-    if (hora.match(/^\d{1,2}:\d{2}$/)) {
-      const [h,m] = hora.split(":");
-      return `${h.padStart(2,"0")}:${m}`;
-    }
-    return hora;
+  _timeToMinutes(t){
+    if(!t) return NaN;
+    const parts = String(t).split(':').map(Number);
+    if(parts.length >=2) return parts[0]*60 + parts[1];
+    return NaN;
   }
 
-  async cargarBloquesIniciales() {
-    this.actualizarEstado("Cargando horario...");
+  // carga inicial
+  async _loadFromApi(){
+    this._setStatus('Cargando horario...');
     try {
-      const resp = await fetch("/horario/api");
-      const data = await resp.json();
-      console.log("Bloques recibidos:", data);
-      if (data.bloques?.length > 0) {
-        this.cargarBloques(data.bloques);
-        this.actualizarEstado(`Horario cargado (${data.bloques.length} cursos)`);
-      } else {
-        this.actualizarEstado("No hay cursos asignados al horario");
+      const res = await fetch('/horario/api');
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      this._log('=== DATOS RECIBIDOS DEL API ===');
+      this._log('Bloques recibidos:', data.bloques ? data.bloques.length : 0);
+      this._log('Contenido:', JSON.stringify(data.bloques, null, 2));
+      
+      if(!data || !Array.isArray(data.bloques) || data.bloques.length===0){
+        this._setStatus('No hay cursos en el horario');
+        return;
       }
-    } catch (e) {
-      console.error("Error al cargar horario:", e);
-      this.actualizarEstado("Error al conectar con el servidor");
+
+      this._renderBloques(data.bloques);
+      this._setStatus(`Horario cargado (${data.bloques.length} cursos)`);
+    } catch(e){
+      console.error('Error al obtener horario', e);
+      this._setStatus('Error de conexión con servidor');
     }
   }
 
-  cargarBloques(bloques) {
-    this.limpiarVisual();
-    bloques.forEach(b => {
-      const bloque = {
-        ...b,
-        horaInicio: this.formatearHora(b.horaInicio),
-        horaFin: this.formatearHora(b.horaFin)
-      };
-      this.marcarBloque(bloque);
+  _setStatus(msg){ 
+    const el = document.getElementById('statusMessage'); 
+    if(el) el.textContent = msg; 
+  }
+
+  // Renderiza bloques
+  _renderBloques(bloques){
+    this._clearVisual();
+    this._log('=== RENDERIZANDO BLOQUES ===');
+    bloques.forEach((b, index) => {
+      this._log(`Bloque ${index + 1}:`, JSON.stringify(b));
+      this._renderBloque(b);
     });
   }
 
-  encontrarIndiceCelda(dia, horaInicio) {
-    const diaIndex = this.dias.indexOf(dia);
-    const horaIndex = this.horas.findIndex(h => h.inicio === horaInicio);
-    if (diaIndex === -1 || horaIndex === -1) return -1;
-    return 1 + (horaIndex * 8) + diaIndex + 1;
+  _clearVisual(){
+    this.grid.querySelectorAll('.course-block').forEach(n => n.remove());
+    this.grid.querySelectorAll('.schedule-cell').forEach(c => { 
+        c.innerHTML=''; 
+        c.style.background = '';
+    });
   }
 
-  marcarBloque(b) {
-    const inicio = this.horas.findIndex(h => h.inicio === b.horaInicio);
-    const fin = this.horas.findIndex(h => h.inicio === b.horaFin);
-    if (inicio === -1 || fin === -1 || fin <= inicio) return;
+  _renderBloque(b){
+    const rawDay = b.dia || b.day || '';
+    const dayNorm = this._normalizeDay(rawDay);
+    
+    this._log(`Procesando bloque: ${rawDay} -> ${dayNorm}`);
+    this._log(`Horario: ${b.horaInicio} - ${b.horaFin}`);
 
-    for (let i = inicio; i < fin; i++) {
-      const celdaIdx = this.encontrarIndiceCelda(b.dia, this.horas[i].inicio);
-      const celda = this.grid.children[celdaIdx];
-      if (!celda) continue;
-      celda.innerHTML = "";
-      const block = document.createElement("div");
-      block.className = "course-block";
-      if (i === inicio) {
-        block.innerHTML = `<strong>${b.nombre}</strong><div class="course-time">${b.horaInicio} - ${b.horaFin}</div>`;
-        block.title = `${b.nombre}\n${b.dia} ${b.horaInicio}-${b.horaFin}`;
-      }
-      celda.appendChild(block);
+    const startMin = this._timeToMinutes(this._shortenTime(b.horaInicio));
+    const endMin = this._timeToMinutes(this._shortenTime(b.horaFin));
+    
+    this._log(`Tiempos en minutos: ${startMin} - ${endMin}`);
+
+    if(isNaN(startMin) || isNaN(endMin) || endMin <= startMin) {
+      this._log('ERROR: Horario inválido en bloque', b);
+      return;
     }
+
+    const selector = `.schedule-cell[data-day="${dayNorm}"]`;
+    const dayCells = Array.from(this.grid.querySelectorAll(selector));
+    
+    this._log(`Celdas encontradas para ${dayNorm}: ${dayCells.length}`);
+
+    if(dayCells.length === 0){
+      this._log(`ERROR: No hay celdas para día ${dayNorm}`);
+      return;
+    }
+
+    const cellsInRange = dayCells.filter(cell => {
+      const cellStartMin = parseInt(cell.getAttribute('data-start-min'));
+      const cellEndMin = parseInt(cell.getAttribute('data-end-min'));
+      return cellStartMin < endMin && cellEndMin > startMin;
+    });
+
+    this._log(`Celdas en rango: ${cellsInRange.length}`);
+
+    if(cellsInRange.length === 0){
+      this._log('ERROR: Ninguna celda encontrada en el rango');
+      return;
+    }
+
+    const blockEl = document.createElement('div');
+    blockEl.className = 'course-block';
+
+    const nombreCurso = b.nombreCurso || b.nombre || 'Curso';
+    const docente = b.docente || 'Docente no especificado';
+    const codigoSeccion = b.codigoSeccion || 'Código no disponible';
+    const horaInicio = this._shortenTime(b.horaInicio);
+    const horaFin = this._shortenTime(b.horaFin);
+
+    blockEl.innerHTML = `
+      <div class="course-title">${this._truncateText(nombreCurso, 40)}</div>
+      <div class="course-info">${this._truncateText(docente, 35)}</div>
+      <div class="course-info">Sección: ${codigoSeccion}</div>
+      <div class="course-time">${horaInicio} - ${horaFin}</div>
+    `;
+
+    blockEl.title = `${nombreCurso}\nDocente: ${docente}\nSección: ${codigoSeccion}\nHorario: ${horaInicio} - ${horaFin}`;
+
+    const firstCell = cellsInRange[0];
+    const lastCell = cellsInRange[cellsInRange.length - 1];
+
+    const top = firstCell.offsetTop;
+    const left = firstCell.offsetLeft;
+    const height = (lastCell.offsetTop + lastCell.offsetHeight) - firstCell.offsetTop;
+    const width = firstCell.offsetWidth - 4;
+
+    blockEl.style.position = 'absolute';
+    blockEl.style.top = `${top}px`;
+    blockEl.style.left = `${left}px`;
+    blockEl.style.width = `${width}px`;
+    blockEl.style.height = `${height}px`;
+
+    this.grid.appendChild(blockEl);
+    this._log(`✓ Bloque renderizado en ${dayNorm} ${horaInicio}-${horaFin}`);
   }
 
-  limpiarVisual() {
-    this.crearEstructuraBase();
+  _truncateText(text, maxLength) {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength - 3) + '...';
+  }
+
+  _shortenTime(t){
+    if(!t) return t;
+    if(typeof t !== 'string') t = String(t);
+    const parts = t.split(':');
+    return parts.length >= 2 ? `${parts[0].padStart(2,'0')}:${parts[1].padStart(2,'0')}` : t;
+  }
+
+  async refresh(){
+    await this._loadFromApi();
   }
 }
 
-let horarioManager;
-document.addEventListener("DOMContentLoaded", () => {
-  horarioManager = new HorarioManager();
-});
+let horarioManager = new HorarioManager();
 
-function actualizarDesdeBackend() {
-  horarioManager.actualizarEstado("Actualizando...");
-  horarioManager.cargarBloquesIniciales();
+function actualizarDesdeBackend(){ 
+  horarioManager.refresh(); 
 }
 
-function limpiarHorario() {
-  if (!confirm("¿Seguro que deseas limpiar el horario?")) return;
-  fetch("/horario/api/clear", { method: "DELETE" })
-    .then(resp => {
-      if (resp.ok) {
-        horarioManager.limpiarVisual();
-        horarioManager.actualizarEstado("Horario limpiado");
+function limpiarHorario(){
+  if(!confirm('¿Seguro que quieres limpiar todo el horario?')) return;
+  fetch('/horario/api/clear', { method:'DELETE' })
+    .then(r => {
+      if(r.ok){
+        horarioManager._clearVisual();
+        document.getElementById('statusMessage').textContent = 'Horario limpiado';
       } else {
-        alert("Error al limpiar el horario");
+        alert('Error al limpiar horario');
       }
-    })
-    .catch(() => alert("Error al conectar con el servidor"));
+    }).catch(e => { 
+      alert('Error al conectar con el servidor'); 
+      console.error(e); 
+    });
+}
+
+function toggleDebug() {
+  const debugPanel = document.getElementById('debugPanel');
+  debugPanel.style.display = debugPanel.style.display === 'none' ? 'block' : 'none';
 }
 </script>
 </body>
