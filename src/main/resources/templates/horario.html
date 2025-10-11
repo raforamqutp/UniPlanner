@@ -1,8 +1,75 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
 <meta charset="UTF-8">
+<title>Horario - UNIplanner</title>
+
 <style>
+body {
+  font-family: "Segoe UI", Roboto, sans-serif;
+  background-color: #f7f9fc;
+  margin: 0;
+  padding: 0;
+}
+
+nav {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background-color: #1e3a8a;
+  padding: 0.8rem;
+  flex-wrap: wrap;
+}
+
+nav a {
+  color: white;
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 0.5rem 0.8rem;
+  transition: background 0.2s ease;
+  border-radius: 6px;
+}
+
+nav a:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.header {
+  text-align: center;
+  padding: 1rem;
+  color: #1e3a8a;
+}
+
+.actions {
+  text-align: center;
+  margin: 1rem;
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s;
+  margin: 0 0.5rem;
+}
+
+.btn:hover {
+  background-color: #dc2626;
+}
+
+.btn-success {
+  background-color: #10b981;
+}
+
+.btn-success:hover {
+  background-color: #059669;
+}
+
 .schedule-container {
   max-width: 100%;
   overflow-x: auto;
@@ -10,6 +77,7 @@
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   padding: 20px;
+  margin: 1rem;
 }
 
 .schedule-grid {
@@ -58,6 +126,37 @@
   font-weight: bold;
 }
 
+.course-block {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 4px;
+  padding: 8px;
+  margin: 2px;
+  font-size: 0.75rem;
+  border-left: 4px solid #4f46e5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  bottom: 2px;
+  z-index: 1;
+}
+
+.course-block:hover {
+  transform: scale(1.02);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  z-index: 2;
+}
+
+.course-time {
+  font-size: 0.7rem;
+  opacity: 0.9;
+  margin-top: 2px;
+}
+
 @media (max-width: 768px) {
   .schedule-grid {
     grid-template-columns: 80px repeat(7, 1fr);
@@ -72,234 +171,171 @@
   }
 }
 </style>
-<title>Horario layout - completo</title>
 </head>
 <body>
-<div class="col-md-8">
-    <div class="schedule-container">
-        <div class="schedule-grid">
-            <!-- Encabezados -->
-            <div class="schedule-corner"></div>
-            <div class="schedule-header">Lunes</div>
-            <div class="schedule-header">Martes</div>
-            <div class="schedule-header">Miércoles</div>
-            <div class="schedule-header">Jueves</div>
-            <div class="schedule-header">Viernes</div>
-            <div class="schedule-header">Sábado</div>
-            <div class="schedule-header">Domingo</div>
 
-            <!-- Filas de horarios de 07:00 a 20:00 -->
-            <!-- Generado cada 30 min -->
-            <!-- 07:00 -->
-            <div class="schedule-time bold-hour">07:00 - 07:30</div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div>
+<nav>
+    <a th:href="@{/cursos}">Volver a Cursos</a>
+    <a th:href="@{/horario}">Actualizar Horario</a>
+</nav>
 
-            <div class="schedule-time">07:30 - 08:00</div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div>
-
-            <div class="schedule-time bold-hour">08:00 - 08:30</div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div>
-
-            <div class="schedule-time">08:30 - 09:00</div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div>
-
-            <div class="schedule-time bold-hour">09:00 - 09:30</div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div>
-
-            <div class="schedule-time">09:30 - 10:00</div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div>
-
-            <div class="schedule-time bold-hour">10:00 - 10:30</div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div>
-
-            <div class="schedule-time">10:30 - 11:00</div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div>
-
-            <div class="schedule-time bold-hour">11:00 - 11:30</div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div>
-
-            <div class="schedule-time">11:30 - 12:00</div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div>
-
-            <div class="schedule-time bold-hour">12:00 - 12:30</div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div>
-
-            <div class="schedule-time">12:30 - 13:00</div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div>
-
-            <div class="schedule-time bold-hour">13:00 - 13:30</div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div>
-
-            <div class="schedule-time">13:30 - 14:00</div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div>
-
-            <div class="schedule-time bold-hour">14:00 - 14:30</div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div>
-
-            <div class="schedule-time">14:30 - 15:00</div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div>
-
-            <div class="schedule-time bold-hour">15:00 - 15:30</div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div>
-
-            <div class="schedule-time">15:30 - 16:00</div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div>
-
-            <div class="schedule-time bold-hour">16:00 - 16:30</div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div>
-
-            <div class="schedule-time">16:30 - 17:00</div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div>
-
-            <div class="schedule-time bold-hour">17:00 - 17:30</div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div>
-
-            <div class="schedule-time">17:30 - 18:00</div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div>
-
-            <div class="schedule-time bold-hour">18:00 - 18:30</div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div>
-
-            <div class="schedule-time">18:30 - 19:00</div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div>
-
-            <div class="schedule-time bold-hour">19:00 - 19:30</div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div>
-
-            <div class="schedule-time">19:30 - 20:00</div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div><div class="schedule-cell"></div><div class="schedule-cell"></div>
-            <div class="schedule-cell"></div>
-        </div>
-    </div>
+<div class="header">
+    <h1>Mi Horario</h1>
+    <p id="statusMessage">Cargando horario...</p>
 </div>
-</body>
+
+<div class="actions">
+    <button class="btn" onclick="limpiarHorario()">Limpiar Horario</button>
+    <button class="btn btn-success" onclick="actualizarDesdeBackend()">Actualizar desde Servidor</button>
+</div>
+
+<div class="schedule-container">
+    <div class="schedule-grid" id="scheduleGrid"></div>
+</div>
 
 <script>
-
 class HorarioManager {
-  constructor(selectorGrid = ".schedule-grid") {
-    this.grid = document.querySelector(selectorGrid);
-    this.timeBlocks = [];
+  constructor() {
+    // Días corregidos (con tildes)
     this.dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
-    this._parseTimeBlocks();
+    this.horas = this.generarHoras();
+    this.grid = document.getElementById('scheduleGrid');
+    this.crearEstructuraBase();
+    this.cargarBloquesIniciales();
   }
 
-  _parseTimeBlocks() {
-    const timeElements = this.grid.querySelectorAll(".schedule-time");
-    this.timeBlocks = Array.from(timeElements).map((el) => {
-      const match = el.textContent.trim().match(/(\d{2}:\d{2})\s*-\s*(\d{2}:\d{2})/);
-      return match
-        ? { horaInicio: match[1], horaFin: match[2], elemento: el }
-        : null;
-    }).filter(Boolean);
+  actualizarEstado(msg) {
+    const el = document.getElementById("statusMessage");
+    if (el) el.textContent = msg;
   }
 
-  obtenerBloques() {
-    return this.timeBlocks.map(({ horaInicio, horaFin }) => ({ horaInicio, horaFin }));
-  }
-
-  _buscarIndicePorHora(horaInicio) {
-    return this.timeBlocks.findIndex(b => b.horaInicio === horaInicio);
-  }
-
-  marcarBloque(dia, horaInicio, horaFin, name = "") {
-    const diaIndex = this.dias.indexOf(dia);
-    if (diaIndex === -1) {
-      console.error("Día inválido:", dia);
-      return;
-    }
-
-    const inicioIndex = this._buscarIndicePorHora(horaInicio);
-    const finIndex = this._buscarIndicePorHora(horaFin);
-
-    if (inicioIndex === -1 || finIndex === -1 || finIndex < inicioIndex) {
-      console.error("Rango de horas inválido:", horaInicio, horaFin);
-      return;
-    }
-
-    for (let i = inicioIndex; i <= finIndex; i++) {
-      const celda = this._obtenerCelda(i, diaIndex);
-      if (celda) {
-        celda.style.backgroundColor = "#cce5ff";
-        celda.style.border = "1px solid #004085";
-        celda.style.color = "#004085";
-        if (name && i === inicioIndex) celda.textContent = name;
+  generarHoras() {
+    const horas = [];
+    for (let h = 7; h <= 22; h++) {
+      for (let m = 0; m < 60; m += 30) {
+        const hi = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+        const nh = m === 30 ? h + 1 : h;
+        const nm = m === 30 ? 0 : 30;
+        const hf = `${String(nh).padStart(2, '0')}:${String(nm).padStart(2, '0')}`;
+        horas.push({ inicio: hi, fin: hf, display: `${hi} - ${hf}` });
       }
     }
+    return horas;
   }
 
-  _obtenerCelda(filaIndex, diaIndex) {
-    const base = 1 + (filaIndex * 8);
-    return this.grid.children[base + diaIndex + 1];
+  crearEstructuraBase() {
+    this.grid.innerHTML = "";
+    this.grid.appendChild(this.crearCelda("schedule-corner", "Hora \\ Día"));
+    this.dias.forEach(d => this.grid.appendChild(this.crearCelda("schedule-header", d)));
+    this.horas.forEach((hora, i) => {
+      const clase = hora.inicio.endsWith(":00") ? "schedule-time bold-hour" : "schedule-time";
+      this.grid.appendChild(this.crearCelda(clase, hora.display));
+      this.dias.forEach(() => this.grid.appendChild(this.crearCelda("schedule-cell", "")));
+    });
   }
 
-  generarJSON() {
-    return JSON.stringify(this.timeBlocks.map(b => ({
-      horaInicio: b.horaInicio,
-      horaFin: b.horaFin
-    })));
+  crearCelda(clase, contenido) {
+    const div = document.createElement("div");
+    div.className = clase;
+    div.textContent = contenido;
+    return div;
+  }
+
+  formatearHora(hora) {
+    if (!hora) return hora;
+    if (hora.match(/^\d{2}:\d{2}:\d{2}$/)) return hora.slice(0,5);
+    if (hora.match(/^\d{1,2}:\d{2}$/)) {
+      const [h,m] = hora.split(":");
+      return `${h.padStart(2,"0")}:${m}`;
+    }
+    return hora;
+  }
+
+  async cargarBloquesIniciales() {
+    this.actualizarEstado("Cargando horario...");
+    try {
+      const resp = await fetch("/horario/api");
+      const data = await resp.json();
+      console.log("Bloques recibidos:", data);
+      if (data.bloques?.length > 0) {
+        this.cargarBloques(data.bloques);
+        this.actualizarEstado(`Horario cargado (${data.bloques.length} cursos)`);
+      } else {
+        this.actualizarEstado("No hay cursos asignados al horario");
+      }
+    } catch (e) {
+      console.error("Error al cargar horario:", e);
+      this.actualizarEstado("Error al conectar con el servidor");
+    }
+  }
+
+  cargarBloques(bloques) {
+    this.limpiarVisual();
+    bloques.forEach(b => {
+      const bloque = {
+        ...b,
+        horaInicio: this.formatearHora(b.horaInicio),
+        horaFin: this.formatearHora(b.horaFin)
+      };
+      this.marcarBloque(bloque);
+    });
+  }
+
+  encontrarIndiceCelda(dia, horaInicio) {
+    const diaIndex = this.dias.indexOf(dia);
+    const horaIndex = this.horas.findIndex(h => h.inicio === horaInicio);
+    if (diaIndex === -1 || horaIndex === -1) return -1;
+    return 1 + (horaIndex * 8) + diaIndex + 1;
+  }
+
+  marcarBloque(b) {
+    const inicio = this.horas.findIndex(h => h.inicio === b.horaInicio);
+    const fin = this.horas.findIndex(h => h.inicio === b.horaFin);
+    if (inicio === -1 || fin === -1 || fin <= inicio) return;
+
+    for (let i = inicio; i < fin; i++) {
+      const celdaIdx = this.encontrarIndiceCelda(b.dia, this.horas[i].inicio);
+      const celda = this.grid.children[celdaIdx];
+      if (!celda) continue;
+      celda.innerHTML = "";
+      const block = document.createElement("div");
+      block.className = "course-block";
+      if (i === inicio) {
+        block.innerHTML = `<strong>${b.nombre}</strong><div class="course-time">${b.horaInicio} - ${b.horaFin}</div>`;
+        block.title = `${b.nombre}\n${b.dia} ${b.horaInicio}-${b.horaFin}`;
+      }
+      celda.appendChild(block);
+    }
+  }
+
+  limpiarVisual() {
+    this.crearEstructuraBase();
   }
 }
 
+let horarioManager;
 document.addEventListener("DOMContentLoaded", () => {
-  window.horario = new HorarioManager();
-
-  console.log("Bloques horarios detectados:");
-  console.table(window.horario.obtenerBloques());
-
+  horarioManager = new HorarioManager();
 });
+
+function actualizarDesdeBackend() {
+  horarioManager.actualizarEstado("Actualizando...");
+  horarioManager.cargarBloquesIniciales();
+}
+
+function limpiarHorario() {
+  if (!confirm("¿Seguro que deseas limpiar el horario?")) return;
+  fetch("/horario/api/clear", { method: "DELETE" })
+    .then(resp => {
+      if (resp.ok) {
+        horarioManager.limpiarVisual();
+        horarioManager.actualizarEstado("Horario limpiado");
+      } else {
+        alert("Error al limpiar el horario");
+      }
+    })
+    .catch(() => alert("Error al conectar con el servidor"));
+}
 </script>
-
-
+</body>
 </html>

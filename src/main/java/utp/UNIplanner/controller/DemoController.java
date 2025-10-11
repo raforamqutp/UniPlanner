@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import utp.UNIplanner.model.CursoResponse;
 import utp.UNIplanner.service.DemoService;
 import utp.UNIplanner.service.SeleccionService;
+import utp.UNIplanner.model.SeleccionResponse;
 
 @RestController
 @RequestMapping("/api/cursos")
@@ -62,7 +63,10 @@ public class DemoController {
 
     @PostMapping("/seleccion")
     public SeleccionResponse seleccionar(@RequestBody List<String> codigos) {
-        return seleccionService.seleccionarSecciones(codigos);
+        SeleccionResponse response = seleccionService.seleccionarSecciones(codigos);
+        if (response.isSuccess()) {
+        }
+        return response;
     }
 
     @GetMapping("/seleccion")

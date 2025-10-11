@@ -84,6 +84,19 @@
             border-left: 3px solid #1e3a8a;
             background-color: #f1f5f9;
             border-radius: 6px;
+            position: relative;
+        }
+
+        .seccion-checkbox {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            transform: scale(1.2);
+        }
+
+        .seccion.selected {
+            border-left-color: #10b981;
+            background-color: #d1fae5;
         }
 
         .docente {
@@ -98,6 +111,37 @@
             margin: 0;
         }
 
+        .actions {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            background-color: #1e3a8a;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #1e40af;
+        }
+
+        .btn-success {
+            background-color: #10b981;
+        }
+
+        .btn-success:hover {
+            background-color: #059669;
+        }
+
         /* Responsive */
         @media (max-width: 600px) {
             nav {
@@ -109,16 +153,23 @@
                 padding: 0.8rem;
                 width: 100%;
             }
+            .actions {
+                position: static;
+                justify-content: center;
+                margin: 1rem;
+            }
         }
     </style>
 </head>
 <body>
 
-    <nav>
-        <a th:href="@{/cursos}">Todos</a>
-        <a th:href="@{/datos/cursos/ciclo/6}">Por Ciclo</a>
-        <a th:href="@{/datos/cursos/nombre/software}">Por Nombre</a>
-    </nav>
+	<nav>
+	    <a th:href="@{/cursos}">Todos</a>
+	    <a th:href="@{/cursos/ciclo/6}">Ciclo 6</a>
+	    <a th:href="@{/cursos/ciclo/7}">Ciclo 7</a>
+	    <a th:href="@{/cursos/ciclo/8}">Ciclo 8</a>
+	    <a th:href="@{/horario}">Ver Horario</a>
+	</nav>
 
     <header>
         <h1 th:text="${titulo}">Cursos</h1>
@@ -131,7 +182,6 @@
     	<input type="text" name="horario" placeholder="Horario">
     	<button type="submit">Buscar</button>
 	</form>
-    
 
     <div class="container">
         <div class="card" th:each="curso : ${cursos}">
@@ -139,10 +189,95 @@
             <div class="ciclo">Ciclo: <span th:text="${curso.ciclo}"></span></div>
 
             <div class="seccion" th:each="seccion : ${curso.secciones}">
-                <div class="docente">Docente: <span th:text="${seccion.docente}"></span></div>
+                <input type="checkbox" 
+                       class="seccion-checkbox"
+                       th:value="${seccion.seccion}"
+                       th:data-horario="${#strings.listJoin(seccion.horario, '|')}"
+                       th:data-nombre="${curso.nombre + ' - Sección ' + seccion.seccion}"
+                       onchange="toggleSeccion(this)">
+                <div class="docente">Sección: <span th:text="${seccion.seccion}"></span> - <span th:text="${seccion.docente}"></span></div>
                 <p class="horario" th:each="h : ${seccion.horario}" th:text="${h}"></p>
             </div>
         </div>
     </div>
+
+    <div class="actions">
+        <button class="btn" onclick="verHorario()">Ver Horario Actual</button>
+        <button class="btn btn-success" onclick="actualizarHorario()">Actualizar Horario</button>
+    </div>
+
+    <script>
+        let seccionesSeleccionadas = new Set();
+
+        function toggleSeccion(checkbox) {
+            const seccionDiv = checkbox.parentElement;
+            const seccionData = {
+                codigo: checkbox.value,
+                horarios: checkbox.getAttribute('data-horario').split('|'),
+                nombre: checkbox.getAttribute('data-nombre')
+            };
+
+            if (checkbox.checked) {
+                seccionDiv.classList.add('selected');
+                seccionesSeleccionadas.add(seccionData);
+            } else {
+                seccionDiv.classList.remove('selected');
+                seccionesSeleccionadas.delete(seccionData);
+            }
+        }
+
+        function actualizarHorario() {
+            const codigos = Array.from(seccionesSeleccionadas).map(s => s.codigo);
+            
+            fetch('/api/cursos/seleccion', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(codigos)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.mensajes && data.mensajes.length > 0) {
+                    alert('Advertencias: ' + data.mensajes.join('\n'));
+                }
+                alert('Horario actualizado correctamente!');
+                // Redirigir al horario
+                window.location.href = '/horario';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al actualizar el horario');
+            });
+        }
+
+        function verHorario() {
+            window.location.href = '/horario';
+        }
+
+        // Cargar selecciones existentes al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('/api/cursos/seleccion')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.seleccionados) {
+                        data.seleccionados.forEach(seccion => {
+                            const checkbox = document.querySelector(`input[value="${seccion.seccion}"]`);
+                            if (checkbox) {
+                                checkbox.checked = true;
+                                checkbox.parentElement.classList.add('selected');
+                                // Reconstruir el objeto seccionData
+                                const seccionData = {
+                                    codigo: seccion.seccion,
+                                    horarios: seccion.horario,
+                                    nombre: seccion.seccion // Podríamos mejorar esto
+                                };
+                                seccionesSeleccionadas.add(seccionData);
+                            }
+                        });
+                    }
+                });
+        });
+    </script>
 </body>
 </html>
