@@ -8,7 +8,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.springframework.stereotype.Service;
 
-import utp.UNIplanner.controller.SeleccionResponse;
+import utp.UNIplanner.model.SeleccionResponse;
 import utp.UNIplanner.model.Seccion;
 
 @Service
@@ -21,7 +21,6 @@ public class SeleccionService {
         this.demoService = demoService;
     }
 
-    // Seleccionar secciones por sus códigos
     public SeleccionResponse seleccionarSecciones(List<String> codigos) {
         List<Seccion> nuevas = new ArrayList<>();
         List<String> mensajes = new ArrayList<>();
@@ -43,25 +42,25 @@ public class SeleccionService {
         // Detectar choques de horario entre los ya seleccionados + nuevos
         List<Seccion> total = new ArrayList<>(seleccionados);
         total.addAll(nuevas);
-        mensajes.addAll(detectarChoques(total));
+        List<String> conflictos = detectarChoques(total);
+        mensajes.addAll(conflictos);
 
-        // Agregar igualmente las secciones nuevas a seleccionados
-        seleccionados.addAll(nuevas);
+        if (conflictos.isEmpty()) {
+            // Solo agregar si no hay conflictos
+            seleccionados.addAll(nuevas);
+        }
 
         return new SeleccionResponse(new ArrayList<>(seleccionados), mensajes);
     }
 
-    // Retorna todos los seleccionados actuales
     public SeleccionResponse obtenerSeleccionados() {
         return new SeleccionResponse(new ArrayList<>(seleccionados), Collections.emptyList());
     }
 
-    // Limpia la selección
     public void limpiarSeleccion() {
         seleccionados.clear();
     }
 
-    // Detección simple de choques basada en igualdad exacta de cadenas de horario
     private List<String> detectarChoques(List<Seccion> secciones) {
         List<String> conflictos = new ArrayList<>();
 
@@ -72,11 +71,8 @@ public class SeleccionService {
                 for (String h1 : a.getHorario()) {
                     for (String h2 : b.getHorario()) {
                         if (h1.equals(h2)) {
-                            conflictos.add("Choque entre sección " +
-                                    a.getSeccion() +
-                                    " y sección " +
-                                    b.getSeccion() +
-                                    " en horario: " + h1);
+                            conflictos.add("Choque entre " + a.getSeccion() + " y " + 
+                                         b.getSeccion() + " en: " + h1);
                         }
                     }
                 }
