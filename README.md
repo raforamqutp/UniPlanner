@@ -30,11 +30,7 @@ El objetivo del proyecto es gestionar y visualizar cursos a partir de un archivo
 - API REST para acceder a los datos de cursos en formato JSON.
 - Se puede seleccionar cursos y "guardarlos" (falta interacción de vista)
 - Nuevos environments de tests
-
----
-
-## Funcionalidades futuras
-- Crear horario final
+- Horario final
 
 ---
 
@@ -42,41 +38,41 @@ El objetivo del proyecto es gestionar y visualizar cursos a partir de un archivo
 
 ### Vistas (Thymeleaf)
 - **Todos los cursos:**  
-  `http://localhost:8080/cursos`  
+  `http://localhost:8420/cursos`  
   ![1](resources/images/1.png)
 
 - **Cursos por ciclo:**  
-  `http://localhost:8080/cursos/ciclo/{ciclo}`  
+  `http://localhost:8420/cursos/ciclo/{ciclo}`  
   Ejemplo: `/cursos/ciclo/7`  
   ![2](resources/images/2.png)
 
 - **Cursos por nombre:**  
-  `http://localhost:8080/cursos/nombre/{nombre}`  
+  `http://localhost:8420/cursos/nombre/{nombre}`  
   Ejemplo: `/cursos/nombre/software`  
   ![3](resources/images/3.png)
 
 - **Búsqueda avanzada (filtros opcionales + paginación):**  
-  `http://localhost:8080/cursos/buscar?nombre=desarrollo&ciclo=7&docente=VALENCIA&horario=Miercoles&page=0&size=5`  
+  `http://localhost:8420/cursos/buscar?nombre=desarrollo&ciclo=7&docente=VALENCIA&horario=Miercoles&page=0&size=5`  
   ![4](resources/images/4.png)
 
 ---
 
 ### API REST (JSON)
 - **Todos los cursos (demo completa):**  
-  `http://localhost:8080/api/cursos/demo`  
+  `http://localhost:8420/api/cursos/demo`  
   ![5](resources/images/5.png)
 
 - **Cursos por ciclo:**  
-  `http://localhost:8080/api/cursos/ciclo/{ciclo}`  
+  `http://localhost:8420/api/cursos/ciclo/{ciclo}`  
   Ejemplo: `/api/cursos/ciclo/7`
 
 - **Cursos por nombre:**  
-  `http://localhost:8080/api/cursos/nombre/{nombre}`  
+  `http://localhost:8420/api/cursos/nombre/{nombre}`  
   Ejemplo: `/api/cursos/nombre/innovación`  
   ![6](resources/images/6.png)
 
 - **Búsqueda avanzada (JSON):**  
-  `http://localhost:8080/api/cursos/buscar?nombre=diseño&docente=MALDONADO&ciclo=7&page=0&size=10`  
+  `http://localhost:8420/api/cursos/buscar?nombre=diseño&docente=MALDONADO&ciclo=7&page=0&size=10`  
   ![7](resources/images/7.png)
 
 ---
