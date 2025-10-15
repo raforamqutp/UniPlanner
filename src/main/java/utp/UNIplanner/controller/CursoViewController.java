@@ -19,6 +19,12 @@ public class CursoViewController {
     public CursoViewController(DemoService demoService) {
         this.demoService = demoService;
     }
+    
+ // Redirigir la raíz "/" hacia "/cursos"
+    @GetMapping("/")
+    public String redirectToCursos() {
+        return "redirect:/cursos";
+    }
 
     // Mostrar todos los cursos
     @GetMapping("/cursos")
