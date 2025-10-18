@@ -2,8 +2,12 @@ package utp.UNIplanner.service;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.springframework.stereotype.Service;
@@ -61,23 +65,35 @@ public class SeleccionService {
         seleccionados.clear();
     }
 
+    // Lógica de choques mejorda
     private List<String> detectarChoques(List<Seccion> secciones) {
         List<String> conflictos = new ArrayList<>();
-
-        for (int i = 0; i < secciones.size(); i++) {
-            for (int j = i + 1; j < secciones.size(); j++) {
-                Seccion a = secciones.get(i);
-                Seccion b = secciones.get(j);
-                for (String h1 : a.getHorario()) {
-                    for (String h2 : b.getHorario()) {
-                        if (h1.equals(h2)) {
-                            conflictos.add("Choque entre " + a.getSeccion() + " y " + 
-                                         b.getSeccion() + " en: " + h1);
-                        }
+        Map<String, Set<String>> horarioMap = new HashMap<>();
+        
+        for (Seccion seccion : secciones) {
+            for (String horarioStr : seccion.getHorario()) {
+                String[] partes = horarioStr.split(" : ");
+                if (partes.length == 2) {
+                    String claveHorario = partes[0].trim() + "_" + partes[1].trim();
+                    if (horarioMap.containsKey(claveHorario)) {
+                        horarioMap.get(claveHorario).add(seccion.getSeccion());
+                    } else {
+                        Set<String> seccionesEnHorario = new HashSet<>();
+                        seccionesEnHorario.add(seccion.getSeccion());
+                        horarioMap.put(claveHorario, seccionesEnHorario);
                     }
                 }
             }
         }
+        
+        // Identificar conflictos
+        horarioMap.forEach((horario, seccionesEnHorario) -> {
+            if (seccionesEnHorario.size() > 1) {
+                conflictos.add("Conflicto en horario " + horario.replace("_", " : ") + 
+                              " entre secciones: " + String.join(", ", seccionesEnHorario));
+            }
+        });
+        
         return conflictos;
     }
 }
