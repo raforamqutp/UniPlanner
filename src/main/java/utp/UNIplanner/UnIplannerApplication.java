@@ -11,9 +11,7 @@ import java.net.URI;
 public class UnIplannerApplication {
 
     public static void main(String[] args) {
-        System.setProperty("server.port", "8420"); // Fuerza el puerto 8420
         ConfigurableApplicationContext context = SpringApplication.run(UnIplannerApplication.class, args);
-
         try {
             if (Desktop.isDesktopSupported()) {
                 Desktop.getDesktop().browse(new URI("http://localhost:8420"));
