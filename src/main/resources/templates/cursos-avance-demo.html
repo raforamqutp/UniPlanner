@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo - UTP Class Tracker</title>
+    
+    <style>
+        /* Reset básico y fuente */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5;
+        }
+
+        /* Contenedor principal de la "app" (de HomeScreen.jsx) */
+        .safe-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh; /* Ocupa toda la altura de la pantalla */
+            overflow: hidden; /* Evita el scroll de la página principal */
+        }
+
+        /* Cabecera (de HomeScreen.jsx) */
+        .header {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background-color: #ffffff;
+            border-bottom: 1px solid #d1d1d1;
+            flex-shrink: 0; /* Evita que la cabecera se encoja */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        /* Botón de menú (de HomeScreen.jsx) */
+        .icon-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            font-size: 28px; /* Tamaño del ícono */
+            color: #333;
+            margin-right: 15px;
+        }
+
+        /* Título (de HomeScreen.jsx) */
+        .title {
+            margin: 0;
+            font-size: 1.5rem;
+            color: #333;
+        }
+
+        /* Contenedor con scroll horizontal para los ciclos (de HomeScreen.jsx) */
+        .scroll-container {
+            display: flex;
+            flex-direction: row; /* Alinea las columnas horizontalmente */
+            overflow-x: auto;  /* Permite el scroll horizontal */
+            flex-grow: 1;      /* Ocupa el espacio restante */
+            background-color: #e9eef2;
+            padding: 20px;
+            gap: 16px; /* Espacio entre columnas */
+        }
+
+        /* Columna de un ciclo (de HomeScreen.jsx) */
+        .column {
+            display: flex;
+            flex-direction: column;
+            width: 300px;      /* Ancho fijo para cada columna */
+            flex-shrink: 0;    /* Evita que la columna se encoja */
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            /* Importante: define una altura máxima para que el inner-scroll funcione */
+            max-height: 100%; 
+            box-sizing: border-box; /* Para que el padding no afecte el width */
+        }
+
+        /* Título del ciclo (de HomeScreen.jsx) */
+        .ciclo-title {
+            padding: 16px;
+            margin: 0;
+            font-size: 1.2rem;
+            color: #1a1a1a;
+            border-bottom: 1px solid #e0e0e0;
+            flex-shrink: 0;
+        }
+
+        /* Contenedor con scroll vertical para los cursos (de HomeScreen.jsx) */
+        .inner-scroll {
+            overflow-y: auto; /* Permite el scroll vertical interno */
+            padding: 16px;
+            /* Ocupa el espacio restante dentro de la columna */
+            flex-grow: 1; 
+        }
+
+        /* Bloque de curso (de CourseBlock.jsx) */
+        .course-block {
+            padding: 16px;
+            margin-bottom: 12px;
+            border-radius: 6px;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+            min-height: 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        /* Texto del nombre del curso */
+        .course-text {
+            /* El texto principal del curso */
+        }
+        
+        /* Texto "Bloqueado" (de CourseBlock.jsx) */
+        .lock-text {
+            font-size: 0.8rem;
+            text-align: right;
+            font-style: italic;
+            font-weight: 400;
+            margin-top: 10px;
+            opacity: 0.9;
+        }
+        
+        /* --- Estados Visuales (simulando la lógica de React) --- */
+
+        /* Estado: Curso Bloqueado (de CourseBlock.jsx) */
+        .course-block.locked {
+            background-color: #BDBDBD; /* Gris */
+            cursor: not-allowed;
+        }
+
+        /* Estado: Curso Desbloqueado (de CourseBlock.jsx) */
+        .course-block.unlocked {
+            background-color: #03A9F4; /* Azul */
+            cursor: default; /* En la demo no hace nada */
+        }
+        .course-block.unlocked:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(3, 169, 244, 0.3);
+        }
+
+        /* Estado: Curso Completado (de CourseBlock.jsx) */
+        .course-block.completed {
+            background-color: #4CAF50; /* Verde */
+            cursor: default; /* En la demo no hace nada */
+        }
+        .course-block.completed:hover {
+             transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="safe-container">
+        
+        <div class="header">
+            <button class="icon-button" aria-label="Toggle Menu">
+                &#9776; </button>
+            <h1 class="title">UTP Class Tracker (Demo Visual)</h1>
+        </div>
+
+        <div class="scroll-container">
+
+            <div class="column">
+                <h2 class="ciclo-title">Ciclo 1</h2>
+                <div class="inner-scroll">
+                    <div class="course-block unlocked">
+                        <div class="course-text">Matemática I</div>
+                    </div>
+                    <div class="course-block unlocked">
+                        <div class="course-text">Principio de Algoritmos</div>
+                    </div>
+                    <div class="course-block unlocked">
+                        <div class="course-text">Individuo y Medio Ambiente</div>
+                    </div>
+                    <div class="course-block unlocked">
+                        <div class="course-text">Introducción a la vida universitaria</div>
+                    </div>
+                    <div class="course-block unlocked">
+                        <div class="course-text">Inglés I</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="column">
+                <h2 class="ciclo-title">Ciclo 2</h2>
+                <div class="inner-scroll">
+                    <div class="course-block completed">
+                        <div class="course-text">Problemas y desafíos en el perú actual</div>
+                    </div>
+                    <div class="course-block completed">
+                        <div class="course-text">Estadística descriptiva</div>
+                    </div>
+                    <div class="course-block unlocked">
+                        <div class="course-text">Matemática II</div>
+                    </div>
+                    <div class="course-block unlocked">
+                        <div class="course-text">Matemática discreta</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="column">
+                <h2 class="ciclo-title">Ciclo 3</h2>
+                <div class="inner-scroll">
+                    <div class="course-block unlocked">
+                        <div class="course-text">Cálculo I</div>
+                    </div>
+                    <div class="course-block locked">
+                        <div class="course-text">Mecánica clásica</div>
+                        <div class="lock-text">Bloqueado</div>
+                    </div>
+                    <div class="course-block locked">
+                        <div class="course-text">Estadística inferencial</div>
+                        <div class="lock-text">Bloqueado</div>
+                    </div>
+                     <div class="course-block unlocked">
+                        <div class="course-text">Inglés III</div>
+                    </div>
+                    <div class="course-block locked">
+                        <div class="course-text">Taller de programación</div>
+                        <div class="lock-text">Bloqueado</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="column">
+                <h2 class="ciclo-title">Ciclo 4</h2>
+                <div class="inner-scroll">
+                    <div class="course-block locked">
+                        <div class="course-text">Cálculo II</div>
+                         <div class="lock-text">Bloqueado</div>
+                    </div>
+                    <div class="course-block locked">
+                        <div class="course-text">Fundamentos de electromagnetismo</div>
+                         <div class="lock-text">Bloqueado</div>
+                    </div>
+                    <div class="course-block locked">
+                        <div class="course-text">Análisis y diseño de algoritmos</div>
+                         <div class="lock-text">Bloqueado</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="column">
+                <h2 class="ciclo-title">Ciclo 5</h2>
+                <div class="inner-scroll">
+                    <div class="course-block locked">
+                        <div class="course-text">Herramientas informáticas</div>
+                         <div class="lock-text">Bloqueado</div>
+                    </div>
+                    <div class="course-block locked">
+                        <div class="course-text">Diseño de patrones</div>
+                         <div class="lock-text">Bloqueado</div>
+                    </div>
+                    <div class="course-block locked">
+                        <div class="course-text">Base de datos II</div>
+                         <div class="lock-text">Bloqueado</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>
