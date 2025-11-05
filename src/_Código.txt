@@ -1,0 +1,2478 @@
+│ main.txt
+│ ├───main
+│ │ ├───java
+│ │ │ ├───utp
+│ │ │ │ ├───UNIplanner
+│ │ │ │ │ UnIplannerApplication.java
+│ │ │ │ │ ├───controller
+│ │ │ │ │ │ CursoViewController.java
+│ │ │ │ │ │ DemoController.java
+│ │ │ │ │ │ HorarioController.java
+│ │ │ │ │ ├───model
+│ │ │ │ │ │ Curso.java
+│ │ │ │ │ │ CursoResponse.java
+│ │ │ │ │ │ HorarioBloque.java
+│ │ │ │ │ │ HorarioResponse.java
+│ │ │ │ │ │ Seccion.java
+│ │ │ │ │ │ SeleccionResponse.java
+│ │ │ │ │ ├───service
+│ │ │ │ │ │ DemoService.java
+│ │ │ │ │ │ HorarioService.java
+│ │ │ │ │ │ SeleccionService.java
+│ │ ├───resources
+│ │ │ application.properties
+│ │ │ ├───data
+│ │ │ │ cursos.json
+│ │ │ ├───static
+│ │ │ ├───templates
+│ │ │ │ cursos-avance-demo.html
+│ │ │ │ cursos.html
+│ │ │ │ horario.html
+│ ├───test
+│ │ ├───java
+│ │ │ ├───utp
+│ │ │ │ ├───UNIplanner
+│ │ │ │ │ UnIplannerApplicationTests.java
+│ │ │ │ │ ├───Controller
+│ │ │ │ │ │ CursoViewControllerTest.java
+│ │ │ │ │ │ DemoControllerTest.java
+│ │ │ │ │ │ HorarioControllerTest.java
+│ │ │ │ │ ├───Service
+│ │ │ │ │ │ DemoServiceTest.java
+
+### main.txt
+'''
+import os
+import re
+
+output_file = "_Código.txt"
+ENCODINGS_TO_TRY = ["utf-8", "utf-8-sig", "cp1252", "latin-1"]
+
+def is_binary_file(path, bytes_to_check=1024):
+    """Chequea si un archivo parece binario leyendo sus primeros bytes."""
+    try:
+        with open(path, "rb") as f:
+            chunk = f.read(bytes_to_check)
+            if b'\x00' in chunk:
+                return True
+            # Heurística simple: si hay muchos bytes fuera de rango ASCII, no es binario necesariamente.
+            return False
+    except Exception:
+        return True
+
+def read_text_file(path):
+    """Intenta leer un archivo probando varias codificaciones. Lanza excepción si no es legible."""
+    if is_binary_file(path):
+        raise UnicodeDecodeError("binary", b"", 0, 1, "archivo binario detectado")
+
+    last_exc = None
+    for enc in ENCODINGS_TO_TRY:
+        try:
+            with open(path, "r", encoding=enc) as f:
+                return f.read()
+        except Exception as e:
+            last_exc = e
+            continue
+    # Si todas fallaron, lanzar la última excepción para informar
+    raise last_exc if last_exc is not None else UnicodeDecodeError("unknown", b"", 0, 1, "no se pudo leer")
+
+def limpiar_html(content):
+    """Elimina las secciones <style>...</style> de un archivo HTML."""
+    return re.sub(r'<style\b[^>]*>.*?</style>', '', content, flags=re.DOTALL | re.IGNORECASE)
+
+def generate_tree(start_path, include_test, include_html):
+    """Genera una vista tipo árbol desde start_path"""
+    tree_lines = []
+    for root, dirs, files in os.walk(start_path):
+        # Omitir carpeta 'test' si no se incluye
+        if 'test' in dirs and not include_test:
+            dirs.remove('test')
+        
+        # Filtrar archivos según configuración y excluir main.py
+        files = [f for f in files if f != "main.py"]
+        if 'resources' in root and not include_html:
+            files = [f for f in files if not f.endswith('.html')]
+        
+        dirs.sort()
+        files.sort()
+
+        level = root.replace(start_path, '').count(os.sep)
+        indent = '│ ' * level + '├───' if level > 0 else ''
+        
+        dirname = os.path.basename(root) or os.path.abspath(root)
+        if level > 0:
+            tree_lines.append(f"{indent}{dirname}")
+        
+        for f in files:
+            if not f.endswith(".css"):
+                sub_indent = '│ ' * (level + 1)
+                tree_lines.append(f"{sub_indent}{f}")
+    
+    return "\n".join(tree_lines)
+
+def process_files(start_path, include_test, include_html):
+    """Lee todos los archivos (excepto .css y main.py) y devuelve bloques formateados.
+       Imprime en consola el estado por archivo."""
+    code_blocks = []
+    
+    for root, dirs, files in os.walk(start_path):
+        if 'test' in dirs and not include_test:
+            dirs.remove('test')
+        
+        files = [f for f in files if f != "main.py"]
+        if 'resources' in root and not include_html:
+            files = [f for f in files if not f.endswith('.html')]
+
+        for file in sorted(files):
+            if file.endswith(".css"):
+                print(f"[SKIP] {file}: archivo .css excluido.")
+                continue
+            
+            file_path = os.path.join(root, file)
+            relative_path = os.path.relpath(file_path, start_path).replace("\\", "/")
+            
+            try:
+                content = read_text_file(file_path)
+                if file.endswith(".html"):
+                    content = limpiar_html(content)
+                block = f"### {relative_path}\n'''\n{content}\n'''\n"
+                code_blocks.append(block)
+                print(f"[OK] {relative_path}: leído correctamente.")
+            except UnicodeDecodeError as e:
+                print(f"[SKIP] {relative_path}: no es archivo de texto o codificación no soportada ({e}).")
+            except Exception as e:
+                print(f"[ERROR] {relative_path}: error al leer ({e}).")
+    
+    return "\n".join(code_blocks)
+
+def ask_user_for_inclusion():
+    include_test = input("¿Deseas incluir los archivos dentro de la carpeta 'test'? (y/n): ").strip().lower() == 'y'
+    include_html = input("¿Deseas incluir los archivos .html dentro de la carpeta 'resources'? (y/n): ").strip().lower() == 'y'
+    return include_test, include_html
+
+def main():
+    start_path = os.getcwd()
+    
+    include_test, include_html = ask_user_for_inclusion()
+    
+    tree_output = generate_tree(start_path, include_test, include_html)
+    files_output = process_files(start_path, include_test, include_html)
+    
+    with open(os.path.join(start_path, output_file), 'w', encoding='utf-8') as f:
+        f.write(tree_output + "\n\n" + files_output)
+    
+    print(f"Archivo '{output_file}' generado correctamente.")
+
+if __name__ == "__main__":
+    main()
+
+'''
+
+### main/java/utp/UNIplanner/UnIplannerApplication.java
+'''
+package utp.UNIplanner;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class UnIplannerApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(UnIplannerApplication.class, args);
+	}
+
+}
+
+'''
+
+### main/java/utp/UNIplanner/controller/CursoViewController.java
+'''
+package utp.UNIplanner.controller;
+
+import java.util.Optional;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import utp.UNIplanner.model.CursoResponse;
+import utp.UNIplanner.service.DemoService;
+
+@Controller
+public class CursoViewController {
+
+    private final DemoService demoService;
+
+    public CursoViewController(DemoService demoService) {
+        this.demoService = demoService;
+    }
+    
+ // Redirigir la raíz "/" hacia "/cursos"
+    @GetMapping("/")
+    public String redirectToCursos() {
+        return "redirect:/cursos";
+    }
+
+    // Mostrar todos los cursos
+    @GetMapping("/cursos")
+    public String verCursos(Model model) {
+        model.addAttribute("titulo", "Todos los Cursos");
+        model.addAttribute("cursos", demoService.getDemoCursos().getCursos());
+        return "cursos";
+    }
+
+    // Mostrar cursos por ciclo
+    @GetMapping("/cursos/ciclo/{ciclo}")
+    public String verCursosPorCiclo(@PathVariable int ciclo, Model model) {
+        model.addAttribute("titulo", "Cursos del Ciclo " + ciclo);
+        model.addAttribute("cursos", demoService.getCursosPorCiclo(ciclo).getCursos());
+        return "cursos";
+    }
+
+    // Mostrar cursos por nombre
+    @GetMapping("/cursos/nombre/{nombre}")
+    public String verCursosPorNombre(@PathVariable String nombre, Model model) {
+        model.addAttribute("titulo", "Cursos que coinciden con: \"" + nombre + "\"");
+        model.addAttribute("cursos", demoService.getCursosPorNombre(nombre).getCursos());
+        return "cursos";
+    }
+
+    // Búsqueda avanzada con filtros
+    @GetMapping("/cursos/buscar")
+    public String buscarCursos(
+            @RequestParam(required = false) String nombre,
+            @RequestParam(required = false) Integer ciclo,
+            @RequestParam(required = false) String docente,
+            @RequestParam(required = false) String horario,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            Model model) {
+
+        CursoResponse response = demoService.buscarCursosPaginado(
+                Optional.ofNullable(nombre),
+                Optional.ofNullable(ciclo),
+                Optional.ofNullable(docente),
+                Optional.ofNullable(horario),
+                page,
+                size
+        );
+
+        model.addAttribute("titulo", "Resultados de Búsqueda");
+        model.addAttribute("cursos", response.getCursos());
+        model.addAttribute("page", page);
+        model.addAttribute("size", size);
+        return "cursos";
+    }
+}
+'''
+
+### main/java/utp/UNIplanner/controller/DemoController.java
+'''
+package utp.UNIplanner.controller;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import utp.UNIplanner.model.CursoResponse;
+import utp.UNIplanner.service.DemoService;
+import utp.UNIplanner.service.SeleccionService;
+import utp.UNIplanner.model.SeleccionResponse;
+
+@RestController
+@RequestMapping("/api/cursos")
+public class DemoController {
+
+    private final DemoService demoService;
+    private final SeleccionService seleccionService;
+
+    public DemoController(DemoService demoService, SeleccionService seleccionService) {
+        this.demoService = demoService;
+        this.seleccionService = seleccionService;
+    }
+
+    @GetMapping("/demo")
+    public CursoResponse getDemo() {
+        return demoService.getDemoCursos();
+    }
+
+    @GetMapping("/ciclo/{ciclo}")
+    public CursoResponse getCursosPorCiclo(@PathVariable int ciclo) {
+        return demoService.getCursosPorCiclo(ciclo);
+    }
+
+    @GetMapping("/nombre/{nombre}")
+    public CursoResponse getCursosPorNombre(@PathVariable String nombre) {
+        return demoService.getCursosPorNombre(nombre);
+    }
+
+    @GetMapping("/buscar")
+    public CursoResponse buscarCursos(
+            @RequestParam(required = false) String nombre,
+            @RequestParam(required = false) Integer ciclo,
+            @RequestParam(required = false) String docente,
+            @RequestParam(required = false) String horario,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return demoService.buscarCursosPaginado(
+                Optional.ofNullable(nombre),
+                Optional.ofNullable(ciclo),
+                Optional.ofNullable(docente),
+                Optional.ofNullable(horario),
+                page,
+                size
+        );
+    }
+
+    @PostMapping("/seleccion")
+    public SeleccionResponse seleccionar(@RequestBody List<String> codigos) {
+        SeleccionResponse response = seleccionService.seleccionarSecciones(codigos);
+        if (response.isSuccess()) {
+        }
+        return response;
+    }
+
+    @GetMapping("/seleccion")
+    public SeleccionResponse obtenerSeleccionados() {
+        return seleccionService.obtenerSeleccionados();
+    }
+
+    @DeleteMapping("/seleccion")
+    public void limpiarSeleccion() {
+        seleccionService.limpiarSeleccion();
+    }
+}
+'''
+
+### main/java/utp/UNIplanner/controller/HorarioController.java
+'''
+package utp.UNIplanner.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.ui.Model;
+import utp.UNIplanner.model.HorarioBloque;
+import utp.UNIplanner.model.HorarioResponse;
+import utp.UNIplanner.model.Seccion;
+import utp.UNIplanner.service.HorarioService;
+import utp.UNIplanner.service.SeleccionService;
+
+import java.time.LocalTime;
+import java.util.List;
+
+@Controller
+@RequestMapping("/horario")
+public class HorarioController {
+
+    private final HorarioService horarioService;
+    private final SeleccionService seleccionService;
+
+    public HorarioController(HorarioService horarioService, SeleccionService seleccionService) {
+        this.horarioService = horarioService;
+        this.seleccionService = seleccionService;
+    }
+
+    @GetMapping
+    public String verHorario(Model model) {
+        System.out.println("=== CARGANDO PÁGINA HORARIO ===");
+        
+        var seleccionResponse = seleccionService.obtenerSeleccionados();
+        List<Seccion> seleccionados = seleccionResponse.getSeleccionados();
+        
+        System.out.println("Selecciones obtenidas: " + (seleccionados != null ? seleccionados.size() : 0));
+        if (seleccionados != null) {
+            seleccionados.forEach(s -> 
+                System.out.println("Sección: " + s.getSeccion() + " - Horarios: " + s.getHorario())
+            );
+        }
+        
+        horarioService.construirHorarioDesdeSelecciones(seleccionados);
+        
+        HorarioResponse horario = horarioService.obtenerHorario();
+        System.out.println("Bloques en horario: " + horario.getBloques().size());
+        
+        model.addAttribute("bloques", horario.getBloques());
+        return "horario";
+    }
+
+    @GetMapping("/api")
+    @ResponseBody
+    public HorarioResponse obtenerHorarioJSON() {
+        System.out.println("=== LLAMADA A /horario/api ===");     
+        var seleccionResponse = seleccionService.obtenerSeleccionados();
+        List<Seccion> seleccionados = seleccionResponse.getSeleccionados();
+        
+        System.out.println("Selecciones para API: " + (seleccionados != null ? seleccionados.size() : 0));
+        horarioService.construirHorarioDesdeSelecciones(seleccionados);
+        
+        HorarioResponse response = horarioService.obtenerHorario();
+        System.out.println("Bloques devueltos por API: " + response.getBloques().size());
+        
+        return response;
+    }
+
+    @PostMapping("/api")
+    @ResponseBody
+    public void agregarBloque(@RequestBody HorarioBloque bloque) {
+        horarioService.agregarBloque(bloque);
+    }
+
+    @DeleteMapping("/api")
+    @ResponseBody
+    public void eliminarBloque(@RequestParam String dia,
+                               @RequestParam String horaInicio,
+                               @RequestParam String horaFin) {
+        horarioService.eliminarBloque(
+                dia,
+                LocalTime.parse(horaInicio),
+                LocalTime.parse(horaFin)
+        );
+    }
+
+    @DeleteMapping("/api/clear")
+    @ResponseBody
+    public void limpiarHorario() {
+        horarioService.limpiar();
+        seleccionService.limpiarSeleccion();
+    }
+}
+'''
+
+### main/java/utp/UNIplanner/model/Curso.java
+'''
+package utp.UNIplanner.model;
+
+import java.util.List;
+import utp.UNIplanner.model.Seccion;
+
+public class Curso {
+    private String nombre;
+    private int ciclo;
+    private List<Seccion> secciones;
+
+    public Curso() {
+    }
+
+    public Curso(String nombre, int ciclo, List<Seccion> secciones) {
+        this.nombre = nombre;
+        this.ciclo = ciclo;
+        this.secciones = secciones;
+    }
+
+    public String getNombre() { return nombre; }
+    public void setNombre(String nombre) { this.nombre = nombre; }
+
+    public int getCiclo() { return ciclo; }
+    public void setCiclo(int ciclo) { this.ciclo = ciclo; }
+
+    public List<Seccion> getSecciones() { return secciones; }
+    public void setSecciones(List<Seccion> secciones) { this.secciones = secciones; }
+}
+'''
+
+### main/java/utp/UNIplanner/model/CursoResponse.java
+'''
+package utp.UNIplanner.model;
+
+import java.util.List;
+
+public class CursoResponse {
+    private List<Curso> cursos;
+
+    public CursoResponse() {
+    }
+
+    public CursoResponse(List<Curso> cursos) {
+        this.cursos = cursos;
+    }
+
+    public List<Curso> getCursos() {
+        return cursos;
+    }
+
+    public void setCursos(List<Curso> cursos) {
+        this.cursos = cursos;
+    }
+
+	public void setMessage(String string) {
+		// TODO Auto-generated method stub
+		
+	}
+}
+'''
+
+### main/java/utp/UNIplanner/model/HorarioBloque.java
+'''
+package utp.UNIplanner.model;
+
+import java.time.LocalTime;
+
+public class HorarioBloque {
+    private String dia;
+    private LocalTime horaInicio;
+    private LocalTime horaFin;
+    private String nombre;
+    private String codigoSeccion;
+    private String docente;
+    private String nombreCurso;
+
+    public HorarioBloque() {}
+
+    public HorarioBloque(String dia, LocalTime horaInicio, LocalTime horaFin, String nombre) {
+        this.dia = dia;
+        this.horaInicio = horaInicio;
+        this.horaFin = horaFin;
+        this.nombre = nombre;
+    }
+
+    // Getters y Setters
+    public String getDia() { return dia; }
+    public void setDia(String dia) { this.dia = dia; }
+
+    public LocalTime getHoraInicio() { return horaInicio; }
+    public void setHoraInicio(LocalTime horaInicio) { this.horaInicio = horaInicio; }
+
+    public LocalTime getHoraFin() { return horaFin; }
+    public void setHoraFin(LocalTime horaFin) { this.horaFin = horaFin; }
+
+    public String getNombre() { return nombre; }
+    public void setNombre(String nombre) { this.nombre = nombre; }
+
+    public String getCodigoSeccion() { return codigoSeccion; }
+    public void setCodigoSeccion(String codigoSeccion) { this.codigoSeccion = codigoSeccion; }
+
+    public String getDocente() { return docente; }
+    public void setDocente(String docente) { this.docente = docente; }
+
+    public String getNombreCurso() { return nombreCurso; }
+    public void setNombreCurso(String nombreCurso) { this.nombreCurso = nombreCurso; }
+}
+'''
+
+### main/java/utp/UNIplanner/model/HorarioResponse.java
+'''
+package utp.UNIplanner.model;
+
+import java.util.List;
+
+public class HorarioResponse {
+    private List<HorarioBloque> bloques;
+
+    public HorarioResponse() {}
+    public HorarioResponse(List<HorarioBloque> bloques) {
+        this.bloques = bloques;
+    }
+
+    public List<HorarioBloque> getBloques() { return bloques; }
+    public void setBloques(List<HorarioBloque> bloques) { this.bloques = bloques; }
+}
+
+'''
+
+### main/java/utp/UNIplanner/model/Seccion.java
+'''
+package utp.UNIplanner.model;
+
+import java.util.List;
+
+public class Seccion {
+    private String seccion;
+    private String docente;
+    private List<String> horario;
+
+    public Seccion() {
+    }
+
+    public Seccion(String seccion, String docente, List<String> horario) {
+        this.seccion = seccion;
+        this.docente = docente;
+        this.horario = horario;
+    }
+
+    public String getSeccion() { return seccion; }
+    public void setSeccion(String seccion) { this.seccion = seccion; }
+
+    public String getDocente() { return docente; }
+    public void setDocente(String docente) { this.docente = docente; }
+
+    public List<String> getHorario() { return horario; }
+    public void setHorario(List<String> horario) { this.horario = horario; }
+}
+
+'''
+
+### main/java/utp/UNIplanner/model/SeleccionResponse.java
+'''
+package utp.UNIplanner.model;
+
+import java.util.List;
+
+public class SeleccionResponse {
+    private List<Seccion> seleccionados;
+    private List<String> mensajes;
+    private boolean success;
+
+    public SeleccionResponse() {
+    }
+
+    public SeleccionResponse(List<Seccion> seleccionados, List<String> mensajes) {
+        this.seleccionados = seleccionados;
+        this.mensajes = mensajes;
+        this.success = mensajes == null || mensajes.isEmpty();
+    }
+
+    // Getters y Setters
+    public List<Seccion> getSeleccionados() {
+        return seleccionados;
+    }
+
+    public void setSeleccionados(List<Seccion> seleccionados) {
+        this.seleccionados = seleccionados;
+    }
+
+    public List<String> getMensajes() {
+        return mensajes;
+    }
+
+    public void setMensajes(List<String> mensajes) {
+        this.mensajes = mensajes;
+    }
+
+    public boolean isSuccess() {
+        return success;
+    }
+
+    public void setSuccess(boolean success) {
+        this.success = success;
+    }
+}
+'''
+
+### main/java/utp/UNIplanner/service/DemoService.java
+'''
+package utp.UNIplanner.service;
+
+import org.springframework.stereotype.Service;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.PostConstruct;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import utp.UNIplanner.model.Curso;
+import utp.UNIplanner.model.CursoResponse;
+import utp.UNIplanner.model.Seccion;
+
+@Service
+public class DemoService {
+
+    private CursoResponse data;
+    private List<Seccion> seleccionActual = new ArrayList<>();
+
+    // Indexados Hashmap
+    private Map<Integer, List<Curso>> indexByCiclo = new HashMap<>();
+    private Map<String, List<Curso>> indexByNombre = new HashMap<>();
+    private Map<String, List<Curso>> indexByDocente = new HashMap<>();
+
+    @PostConstruct
+    public void loadData() {
+        ObjectMapper mapper = new ObjectMapper();
+        try (InputStream is = getClass().getResourceAsStream("/data/cursos.json")) {
+            this.data = mapper.readValue(is, CursoResponse.class);
+            buildIndexes();
+        } catch (IOException e) {
+            throw new RuntimeException("Error al cargar cursos.json", e);
+        }
+    }
+
+    private void buildIndexes() {
+        for (Curso c : data.getCursos()) {
+            // ciclo index
+            indexByCiclo.computeIfAbsent(c.getCiclo(), k -> new ArrayList<>()).add(c);
+
+            // nombre index (en lowercase)
+            String keyNombre = c.getNombre().toLowerCase();
+            indexByNombre.computeIfAbsent(keyNombre, k -> new ArrayList<>()).add(c);
+
+            // docente index
+            for (Seccion s : c.getSecciones()) {
+                String docenteKey = s.getDocente().toLowerCase();
+                indexByDocente.computeIfAbsent(docenteKey, k -> new ArrayList<>()).add(c);
+            }
+        }
+    }
+
+    public CursoResponse getDemoCursos() {
+        return data;
+    }
+
+    public CursoResponse getCursosPorCiclo(int ciclo) {
+        // Original "streaming filter"
+        /*
+        List<Curso> filtrados = data.getCursos().stream()
+                .filter(c -> c.getCiclo() == ciclo)
+                .toList();
+        return new CursoResponse(filtrados);
+        */
+        return new CursoResponse(indexByCiclo.getOrDefault(ciclo, Collections.emptyList()));
+    }
+
+    public CursoResponse getCursosPorNombre(String nombre) {
+        String nombreLower = nombre.toLowerCase();
+
+        // Original "streaming filter"
+        /*
+        List<Curso> filtrados = data.getCursos().stream()
+                .filter(c -> c.getNombre().toLowerCase().contains(nombreLower))
+                .toList();
+        return new CursoResponse(filtrados);
+        */
+
+        // Optimizado para map y coincidencia exacta
+        if (indexByNombre.containsKey(nombreLower)) {
+            return new CursoResponse(indexByNombre.get(nombreLower));
+        } else {
+            List<Curso> filtrados = data.getCursos().stream()
+                    .filter(c -> c.getNombre().toLowerCase().contains(nombreLower))
+                    .toList();
+            return new CursoResponse(filtrados);
+        }
+    }
+
+    public CursoResponse buscarCursos(
+            Optional<String> nombre,
+            Optional<Integer> ciclo,
+            Optional<String> docente,
+            Optional<String> horario) {
+
+        // Forma original "streaming":
+        /*
+        List<Curso> filtrados = data.getCursos().stream()
+            .filter(c -> nombre.map(n -> c.getNombre().toLowerCase().contains(n.toLowerCase())).orElse(true))
+            .filter(c -> ciclo.map(ci -> c.getCiclo() == ci).orElse(true))
+            .filter(c -> docente.map(d ->
+                    c.getSecciones().stream()
+                        .anyMatch(s -> s.getDocente().toLowerCase().contains(d.toLowerCase()))
+            ).orElse(true))
+            .filter(c -> horario.map(h ->
+                    c.getSecciones().stream()
+                        .anyMatch(s -> s.getHorario().stream().anyMatch(hr -> hr.contains(h)))
+            ).orElse(true))
+            .toList();
+        return new CursoResponse(filtrados);
+        */
+
+        // Alternativa usando indexes preindexados
+        Set<Curso> result = new HashSet<>(data.getCursos());
+
+        if (ciclo.isPresent()) {
+            result.retainAll(indexByCiclo.getOrDefault(ciclo.get(), Collections.emptyList()));
+        }
+        if (nombre.isPresent()) {
+            String key = nombre.get().toLowerCase();
+            // substring search requires fallback to scan
+            Set<Curso> byName = indexByNombre.containsKey(key)
+                    ? new HashSet<>(indexByNombre.get(key))
+                    : data.getCursos().stream()
+                          .filter(c -> c.getNombre().toLowerCase().contains(key))
+                          .collect(Collectors.toSet());
+            result.retainAll(byName);
+        }
+        if (docente.isPresent()) {
+            String key = docente.get().toLowerCase();
+            Set<Curso> byDoc = indexByDocente.entrySet().stream()
+                    .filter(e -> e.getKey().contains(key))
+                    .flatMap(e -> e.getValue().stream())
+                    .collect(Collectors.toSet());
+            result.retainAll(byDoc);
+        }
+        if (horario.isPresent()) {
+            String key = horario.get();
+            Set<Curso> byHorario = data.getCursos().stream()
+                    .filter(c -> c.getSecciones().stream()
+                            .anyMatch(s -> s.getHorario().stream().anyMatch(hr -> hr.contains(key))))
+                    .collect(Collectors.toSet());
+            result.retainAll(byHorario);
+        }
+
+        return new CursoResponse(new ArrayList<>(result));
+    }
+
+    public CursoResponse buscarCursosPaginado(
+            Optional<String> nombre,
+            Optional<Integer> ciclo,
+            Optional<String> docente,
+            Optional<String> horario,
+            int page,
+            int size) {
+
+        List<Curso> filtrados = buscarCursos(nombre, ciclo, docente, horario).getCursos();
+        int fromIndex = Math.min(page * size, filtrados.size());
+        int toIndex = Math.min(fromIndex + size, filtrados.size());
+        return new CursoResponse(filtrados.subList(fromIndex, toIndex));
+    }
+}
+
+'''
+
+### main/java/utp/UNIplanner/service/HorarioService.java
+'''
+package utp.UNIplanner.service;
+
+import org.springframework.stereotype.Service;
+import utp.UNIplanner.model.HorarioBloque;
+import utp.UNIplanner.model.HorarioResponse;
+import utp.UNIplanner.model.Seccion;
+import utp.UNIplanner.model.Curso;
+
+import java.time.LocalTime;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+@Service
+public class HorarioService {
+
+    private final List<HorarioBloque> bloques = new CopyOnWriteArrayList<>();
+    private final DemoService demoService;
+
+    public HorarioService(DemoService demoService) {
+        this.demoService = demoService;
+    }
+
+    public HorarioResponse obtenerHorario() {
+        return new HorarioResponse(new ArrayList<>(bloques));
+    }
+
+    public void construirHorarioDesdeSelecciones(List<Seccion> secciones) {
+        bloques.clear();
+        System.out.println("=== CONSTRUYENDO HORARIO DESDE SELECCIONES ===");
+        System.out.println("Número de secciones recibidas: " + (secciones != null ? secciones.size() : 0));
+        
+        if (secciones != null) {
+            for (Seccion seccion : secciones) {
+                System.out.println("Procesando sección: " + seccion.getSeccion() + " - " + seccion.getDocente());
+                System.out.println("Horarios: " + seccion.getHorario());
+                agregarSeccionAlHorario(seccion);
+            }
+        }
+        System.out.println("Total de bloques creados: " + bloques.size());
+        System.out.println("=== FIN CONSTRUCCIÓN HORARIO ===");
+    }
+
+    private void agregarSeccionAlHorario(Seccion seccion) {
+        String nombreCurso = buscarNombreCursoPorSeccion(seccion.getSeccion());
+        
+        for (String horarioStr : seccion.getHorario()) {
+            HorarioBloque bloque = parseHorarioString(horarioStr, seccion, nombreCurso);
+            if (bloque != null && !existeBloque(bloque)) {
+                bloques.add(bloque);
+            }
+        }
+    }
+
+    private String buscarNombreCursoPorSeccion(String codigoSeccion) {
+        for (Curso curso : demoService.getDemoCursos().getCursos()) {
+            for (Seccion seccion : curso.getSecciones()) {
+                if (seccion.getSeccion().equals(codigoSeccion)) {
+                    return curso.getNombre();
+                }
+            }
+        }
+        return "Curso no encontrado";
+    }
+
+    private boolean existeBloque(HorarioBloque nuevoBloque) {
+        return bloques.stream().anyMatch(bloque -> 
+            bloque.getDia().equals(nuevoBloque.getDia()) &&
+            bloque.getHoraInicio().equals(nuevoBloque.getHoraInicio()) &&
+            bloque.getHoraFin().equals(nuevoBloque.getHoraFin()) &&
+            Objects.equals(bloque.getNombre(), nuevoBloque.getNombre())
+        );
+    }
+
+    private HorarioBloque parseHorarioString(String horarioStr, Seccion seccion, String nombreCurso) {
+        try {
+            System.out.println("Parseando horario: " + horarioStr);
+            
+            String[] partes = horarioStr.split(" : ");
+            if (partes.length != 2) {
+                System.err.println("Formato de horario inválido: " + horarioStr);
+                return null;
+            }
+            
+            String dia = normalizarDia(partes[0].trim());
+            String[] horarios = partes[1].split(" - ");
+            if (horarios.length != 2) {
+                System.err.println("Formato de tiempo inválido: " + horarioStr);
+                return null;
+            }
+            
+            LocalTime horaInicio = LocalTime.parse(horarios[0].trim());
+            LocalTime horaFin = LocalTime.parse(horarios[1].trim());
+
+            String nombreCompleto = nombreCurso + " - " + seccion.getDocente();
+            
+            HorarioBloque bloque = new HorarioBloque();
+            bloque.setDia(dia);
+            bloque.setHoraInicio(horaInicio);
+            bloque.setHoraFin(horaFin);
+            bloque.setNombre(nombreCompleto);
+            bloque.setCodigoSeccion(seccion.getSeccion());
+            bloque.setDocente(seccion.getDocente());
+            bloque.setNombreCurso(nombreCurso);
+            
+            System.out.println("Bloque creado: " + dia + " " + horaInicio + "-" + horaFin + " - " + nombreCompleto);
+            return bloque;
+        } catch (Exception e) {
+            System.err.println("Error parseando horario: " + horarioStr + " - " + e.getMessage());
+            return null;
+        }
+    }
+
+    private String normalizarDia(String dia) {
+        switch (dia.toLowerCase()) {
+            case "lunes": return "Lunes";
+            case "martes": return "Martes";
+            case "miercoles": 
+            case "miércoles": return "Miercoles";
+            case "jueves": return "Jueves";
+            case "viernes": return "Viernes";
+            case "sabado": 
+            case "sábado": return "Sabado";
+            case "domingo": return "Domingo";
+            default: return dia;
+        }
+    }
+
+    public void agregarBloque(HorarioBloque bloque) {
+        if (!existeBloque(bloque)) {
+            bloques.add(bloque);
+        }
+    }
+
+    public void eliminarBloque(String dia, LocalTime inicio, LocalTime fin) {
+        bloques.removeIf(b -> b.getDia().equalsIgnoreCase(dia)
+                && b.getHoraInicio().equals(inicio)
+                && b.getHoraFin().equals(fin));
+    }
+
+    public void limpiar() {
+        bloques.clear();
+    }
+}
+'''
+
+### main/java/utp/UNIplanner/service/SeleccionService.java
+'''
+package utp.UNIplanner.service;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import org.springframework.stereotype.Service;
+
+import utp.UNIplanner.model.SeleccionResponse;
+import utp.UNIplanner.model.Seccion;
+
+@Service
+public class SeleccionService {
+
+    private final DemoService demoService;
+    private final List<Seccion> seleccionados = new CopyOnWriteArrayList<>();
+
+    public SeleccionService(DemoService demoService) {
+        this.demoService = demoService;
+    }
+
+    public SeleccionResponse seleccionarSecciones(List<String> codigos) {
+        List<Seccion> nuevas = new ArrayList<>();
+        List<String> mensajes = new ArrayList<>();
+
+        // Buscar secciones en los cursos existentes
+        for (String codigo : codigos) {
+            Optional<Seccion> seccion = demoService.getDemoCursos().getCursos().stream()
+                    .flatMap(c -> c.getSecciones().stream())
+                    .filter(s -> s.getSeccion().equals(codigo))
+                    .findFirst();
+
+            if (seccion.isPresent()) {
+                nuevas.add(seccion.get());
+            } else {
+                mensajes.add("No se encontró la sección con código: " + codigo);
+            }
+        }
+
+        // Detectar choques de horario entre los ya seleccionados + nuevos
+        List<Seccion> total = new ArrayList<>(seleccionados);
+        total.addAll(nuevas);
+        List<String> conflictos = detectarChoques(total);
+        mensajes.addAll(conflictos);
+
+        if (conflictos.isEmpty()) {
+            // Solo agregar si no hay conflictos
+            seleccionados.addAll(nuevas);
+        }
+
+        return new SeleccionResponse(new ArrayList<>(seleccionados), mensajes);
+    }
+
+    public SeleccionResponse obtenerSeleccionados() {
+        return new SeleccionResponse(new ArrayList<>(seleccionados), Collections.emptyList());
+    }
+
+    public void limpiarSeleccion() {
+        seleccionados.clear();
+    }
+
+    // Lógica de choques mejorda
+    private List<String> detectarChoques(List<Seccion> secciones) {
+        List<String> conflictos = new ArrayList<>();
+        Map<String, Set<String>> horarioMap = new HashMap<>();
+        
+        for (Seccion seccion : secciones) {
+            for (String horarioStr : seccion.getHorario()) {
+                String[] partes = horarioStr.split(" : ");
+                if (partes.length == 2) {
+                    String claveHorario = partes[0].trim() + "_" + partes[1].trim();
+                    if (horarioMap.containsKey(claveHorario)) {
+                        horarioMap.get(claveHorario).add(seccion.getSeccion());
+                    } else {
+                        Set<String> seccionesEnHorario = new HashSet<>();
+                        seccionesEnHorario.add(seccion.getSeccion());
+                        horarioMap.put(claveHorario, seccionesEnHorario);
+                    }
+                }
+            }
+        }
+        
+        // Identificar conflictos
+        horarioMap.forEach((horario, seccionesEnHorario) -> {
+            if (seccionesEnHorario.size() > 1) {
+                conflictos.add("Conflicto en horario " + horario.replace("_", " : ") + 
+                              " entre secciones: " + String.join(", ", seccionesEnHorario));
+            }
+        });
+        
+        return conflictos;
+    }
+}
+'''
+
+### main/resources/application.properties
+'''
+spring.application.name=UNIplanner
+server.port=8420
+'''
+
+### main/resources/data/cursos.json
+'''
+{
+  "cursos": [
+    {
+      "nombre": "CURSO INTEGRADOR I: SISTEMAS - SOFTWARE",
+      "ciclo": 6,
+      "secciones": [
+        {
+          "seccion": "11335",
+          "docente": "GONZALES SAJI,FREDDY ORLANDO",
+          "horario": [
+            "Martes : 20:15 - 21:45",
+            "Viernes : 20:15 - 21:45"
+          ]
+        },
+        {
+          "seccion": "11288",
+          "docente": "GONZALES SAJI,FREDDY ORLANDO",
+          "horario": [
+            "Martes : 14:00 - 15:30",
+            "Viernes : 14:00 - 15:30"
+          ]
+        },
+        {
+          "seccion": "7272",
+          "docente": "NIETO VALENCIA,RENE ALONSO",
+          "horario": [
+            "Martes : 08:45 - 10:15",
+            "Jueves : 08:45 - 10:15"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "HERRAMIENTAS DE DESARROLLO",
+      "ciclo": 7,
+      "secciones": [
+        {
+          "seccion": "12242",
+          "docente": "RAMIREZ TICONA,JUAN",
+          "horario": [
+            "Miercoles : 12:15 - 13:45",
+            "Sabado : 12:15 - 13:45"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "DESARROLLO WEB INTEGRADO",
+      "ciclo": 7,
+      "secciones": [
+        {
+          "seccion": "12240",
+          "docente": "VALENCIA GALLEGOS,OMAR JULIO",
+          "horario": [
+            "Miercoles : 14:30 - 16:45"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "DISEÑO DE PRODUCTOS Y SERVICIOS",
+      "ciclo": 7,
+      "secciones": [
+        {
+          "seccion": "12292",
+          "docente": "MALDONADO QUISPE,PERCY",
+          "horario": [
+            "Sabado : 17:00 - 19:15"
+          ]
+        },
+        {
+          "seccion": "12279",
+          "docente": "FERNANDEZ CATALAN,JULIO EDZEL",
+          "horario": [
+            "Viernes : 14:30 - 16:45"
+          ]
+        },
+        {
+          "seccion": "12262",
+          "docente": "MALDONADO QUISPE,PERCY",
+          "horario": [
+            "Miercoles : 07:00 - 09:15"
+          ]
+        },
+        {
+          "seccion": "12243",
+          "docente": "MALDONADO QUISPE,PERCY",
+          "horario": [
+            "Jueves : 07:00 - 09:15"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "DISEÑO E IMPLEMENTACIÓN DE ARQUITECTURA EMPRESARIAL",
+      "ciclo": 8,
+      "secciones": [
+        {
+          "seccion": "12893",
+          "docente": "CHAVEZ CUARITE,DUILIO ANDRE",
+          "horario": [
+            "Lunes : 17:00 - 18:30",
+            "Jueves : 17:00 - 18:30"
+          ]
+        },
+        {
+          "seccion": "12881",
+          "docente": "BEGAZO ARENAS,OSCAR ALFREDO",
+          "horario": [
+            "Martes : 20:15 - 21:45",
+            "Viernes : 20:15 - 21:45"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "GESTIÓN DEL SERVICIO TI",
+      "ciclo": 8,
+      "secciones": [
+        {
+          "seccion": "12882",
+          "docente": "CALLO AGUILAR,ALEJANDRA CRISTINA",
+          "horario": [
+            "Lunes : 17:00 - 18:30",
+            "Jueves : 17:00 - 18:30"
+          ]
+        },
+        {
+          "seccion": "12855",
+          "docente": "GÁLVEZ GÁLVEZ,DAVID ARTHUR",
+          "horario": [
+            "Martes : 10:30 - 12:00",
+            "Viernes : 10:30 - 12:00"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "NEGOCIACIÓN Y NARRATIVA",
+      "ciclo": 8,
+      "secciones": [
+        {
+          "seccion": "12897",
+          "docente": "ESCALANTE ARENAS,MARIA ANGELA",
+          "horario": [
+            "Viernes : 17:00 - 18:30"
+          ]
+        },
+        {
+          "seccion": "12892",
+          "docente": "ESCALANTE ARENAS,MARIA ANGELA",
+          "horario": [
+            "Miercoles : 17:00 - 18:30"
+          ]
+        },
+        {
+          "seccion": "12879",
+          "docente": "ESCALANTE ARENAS,MARIA ANGELA",
+          "horario": [
+            "Martes : 17:00 - 18:30"
+          ]
+        },
+        {
+          "seccion": "12860",
+          "docente": "VIZA CALISAYA,ENZO ARTURO",
+          "horario": [
+            "Miercoles : 14:00 - 15:30"
+          ]
+        },
+        {
+          "seccion": "12859",
+          "docente": "ESCALANTE ARENAS,MARIA ANGELA",
+          "horario": [
+            "Martes : 14:00 - 15:30"
+          ]
+        },
+        {
+          "seccion": "12858",
+          "docente": "ESCALANTE ARENAS,MARIA ANGELA",
+          "horario": [
+            "Viernes : 14:00 - 15:30"
+          ]
+        },
+        {
+          "seccion": "12853",
+          "docente": "ESCALANTE ARENAS,MARIA ANGELA",
+          "horario": [
+            "Lunes : 14:00 - 15:30"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "INNOVACIÓN Y TRANSFORMACIÓN DIGITAL",
+      "ciclo": 8,
+      "secciones": [
+        {
+          "seccion": "12894",
+          "docente": "ALFARO CASAS,LUIS ALBERTO",
+          "horario": [
+            "Miercoles : 20:15 - 21:45",
+            "Viernes : 20:15 - 21:45"
+          ]
+        },
+        {
+          "seccion": "12883",
+          "docente": "NIETO VALENCIA,RENE ALONSO",
+          "horario": [
+            "Miercoles : 17:00 - 18:30",
+            "Sabado : 17:00 - 18:30"
+          ]
+        }
+      ]
+    }
+  ]
+}
+'''
+
+### main/resources/templates/cursos-avance-demo.html
+'''
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Interactiva - UTP Class Tracker</title>
+    
+    
+</head>
+<body>
+
+    <div class="safe-container">
+        
+        <div class="header">
+            <button class="icon-button" aria-label="Toggle Menu">
+                &#9776;
+            </button>
+            <h1 class="title">UTP Class Tracker (Demo JS)</h1>
+            <button class="reset-button" id="reset-storage">Reset Progreso</button>
+        </div>
+
+        <div class="scroll-container" id="scroll-container">
+            </div>
+    </div>
+
+    <script>
+        // DATOS TEMPORALES (luego será cargado de data/courses) ---
+        const cursosPorCiclo = {
+            1: [
+                { id: '100000I0N2', name: 'Matemática I', prerequisites: [] },
+                { id: '100000I07N', name: 'Principio de Algoritmos', prerequisites: [] },
+                { id: '100000N09I', name: 'Individuo y Medio Ambiente', prerequisites: [] },
+            ],
+            2: [
+                { id: '100000N06I', name: 'Problemas y desafíos...', prerequisites: [] },
+                { id: '100000I13N', name: 'Estadística descriptiva', prerequisites: [] },
+                { id: '100000I0N3', name: 'Matemática II', prerequisites: ['100000I0N2'] }, // Prerrequisito: Mat I
+            ],
+            3: [
+                { id: '100000I0N6', name: 'Cálculo I', prerequisites: ['100000I0N3'] }, // Prerrequisito: Mat II
+                { id: '100000I50N', name: 'Taller de programación', prerequisites: ['100000I07N'] }, // Prerrequisito: Principio de Alg.
+            ],
+            4: [
+                { id: '100000I1N0', name: 'Cálculo II', prerequisites: ['100000I0N6'] }, // Prerrequisito: Cálculo I
+                { id: '100000I55N', name: 'Programación orientada a objetos', prerequisites: ['100000I50N'] }, // Prerrequisito: Taller de Prog.
+            ],
+            5: [
+                { id: '100000I57N', name: 'Taller de programación web', prerequisites: ['100000I55N'] }, // Prerrequisito: POO
+            ],
+            6: [
+                // Cursos con múltiples prerrequisitos
+                { id: '100000SI58', name: 'Hojas de estilo avanzado', prerequisites: ['100000I57N'] },
+                { id: '100000SI57', name: 'Marcos de desarrollo web', prerequisites: ['100000I57N'] },
+            ],
+            7: [
+                // Prerrequisito múltiple
+                { id: '100000ST61', name: 'Desarrollo web integrado', prerequisites: ['100000SI58','100000SI57'] },
+            ]
+        };
+
+
+        const STORAGE_KEY = 'demo_completed_courses';
+        let completedCourses = {}; // Objeto que guarda el estado, ej: { '100000I0N2': true }
+
+        // --- 3. FUNCIONES DE LÓGICA (Simulando React) ---
+
+        /** Carga el estado desde localStorage */
+        function loadData() {
+            try {
+                const json = localStorage.getItem(STORAGE_KEY);
+                completedCourses = json ? JSON.parse(json) : {};
+            } catch (e) {
+                console.error('Failed to load saved data:', e);
+                completedCourses = {};
+            }
+        }
+
+        /** Guarda el estado en localStorage */
+        function saveData() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(completedCourses));
+            } catch (e) {
+                console.error('Failed to save course state:', e);
+            }
+        }
+
+
+        function calculateUnlockedCourses() {
+            const newUnlocked = {};
+            // Itera sobre todos los ciclos y cursos
+            for (const ciclo in cursosPorCiclo) {
+                for (const course of cursosPorCiclo[ciclo]) {
+                    // Verifica si *todos* los prerrequisitos están en 'completedCourses'
+                    const allPrereqsMet = course.prerequisites.every(
+                        (prereqId) => completedCourses[prereqId]
+                    );
+                    
+                    if (allPrereqsMet) {
+                        newUnlocked[course.id] = true;
+                    }
+                }
+            }
+            return newUnlocked;
+        }
+
+
+        function handleCourseToggle(courseId) {
+            // Invierte el estado de completado
+            completedCourses[courseId] = !completedCourses[courseId];
+            
+            saveData(); // Guarda el nuevo estado
+            renderApp(); // Vuelve a dibujar toda la UI con el estado actualizado
+        }
+        
+
+        function handleReset() {
+            if (confirm('¿Estás seguro de que quieres borrar tu progreso?')) {
+                localStorage.removeItem(STORAGE_KEY);
+                completedCourses = {};
+                renderApp();
+            }
+        }
+
+
+        function renderApp() {
+            const container = document.getElementById('scroll-container');
+            container.innerHTML = ''; // Limpia el contenedor
+
+            // 1. Calcula el estado de los cursos desbloqueados
+            const unlockedCourses = calculateUnlockedCourses();
+
+            // 2. Itera sobre los datos y crea el HTML
+            Object.entries(cursosPorCiclo).forEach(([cicloNum, courses]) => {
+                
+                // --- Crea la Columna ---
+                const columnEl = document.createElement('div');
+                columnEl.className = 'column';
+
+                // --- Crea el Título del Ciclo ---
+                const titleEl = document.createElement('h2');
+                titleEl.className = 'ciclo-title';
+                titleEl.textContent = `Ciclo ${cicloNum}`;
+                columnEl.appendChild(titleEl);
+
+
+                const innerScrollEl = document.createElement('div');
+                innerScrollEl.className = 'inner-scroll';
+
+
+                courses.forEach(course => {
+                    const courseBlockEl = document.createElement('div');
+                    
+                    // Define el estado visual
+                    const isCompleted = !!completedCourses[course.id];
+                    // Un curso está "desbloqueado" si sus prerrequisitos están cumplidos O si no tiene prerrequisitos
+                    const isUnlocked = !!unlockedCourses[course.id] || course.prerequisites.length === 0;
+
+                    // Aplica las clases CSS correctas
+                    courseBlockEl.className = 'course-block';
+                    if (isCompleted) {
+                        courseBlockEl.classList.add('completed');
+                    } else if (isUnlocked) {
+                        courseBlockEl.classList.add('unlocked');
+                    } else {
+                        courseBlockEl.classList.add('locked');
+                    }
+
+                    // Añade el nombre del curso
+                    const textEl = document.createElement('div');
+                    textEl.className = 'course-text';
+                    textEl.textContent = course.name;
+                    courseBlockEl.appendChild(textEl);
+
+                    // Si está bloqueado, añade el texto "Bloqueado"
+                    if (!isUnlocked) {
+                        const lockTextEl = document.createElement('div');
+                        lockTextEl.className = 'lock-text';
+                        lockTextEl.textContent = 'Bloqueado';
+                        courseBlockEl.appendChild(lockTextEl);
+                    }
+
+                    // Añade el evento de clic SÓLO si está desbloqueado
+                    if (isUnlocked) {
+                        courseBlockEl.onclick = () => handleCourseToggle(course.id);
+                    }
+
+                    innerScrollEl.appendChild(courseBlockEl);
+                });
+                
+                columnEl.appendChild(innerScrollEl);
+                container.appendChild(columnEl);
+            });
+        }
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Asigna el evento al botón de reset
+            document.getElementById('reset-storage').onclick = handleReset;
+            
+            // Carga el estado inicial
+            loadData();
+            // Dibuja la aplicación por primera vez
+            renderApp();
+        });
+
+    </script>
+</body>
+</html>
+'''
+
+### main/resources/templates/cursos.html
+'''
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${titulo}">Cursos</title>
+    
+</head>
+<body>
+
+	<nav>
+	    <a th:href="@{/cursos}">Todos</a>
+	    <a th:href="@{/cursos/ciclo/6}">Ciclo 6</a>
+	    <a th:href="@{/cursos/ciclo/7}">Ciclo 7</a>
+	    <a th:href="@{/cursos/ciclo/8}">Ciclo 8</a>
+	    <a th:href="@{/horario}">Ver Horario</a>
+	</nav>
+
+    <header>
+        <h1 th:text="${titulo}">Cursos</h1>
+    </header>
+    
+    <form th:action="@{/cursos/buscar}" method="get" style="padding:1rem; background:#f1f5f9; border-radius:8px; margin:1rem;">
+    	<input type="text" name="nombre" placeholder="Nombre del curso">
+    	<input type="number" name="ciclo" placeholder="Ciclo">
+    	<input type="text" name="docente" placeholder="Docente">
+    	<input type="text" name="horario" placeholder="Horario">
+    	<button type="submit">Buscar</button>
+	</form>
+
+    <div class="container">
+        <div class="card" th:each="curso : ${cursos}">
+            <div class="curso-nombre" th:text="${curso.nombre}"></div>
+            <div class="ciclo">Ciclo: <span th:text="${curso.ciclo}"></span></div>
+
+            <div class="seccion" th:each="seccion : ${curso.secciones}">
+                <input type="checkbox" 
+                       class="seccion-checkbox"
+                       th:value="${seccion.seccion}"
+                       th:data-horario="${#strings.listJoin(seccion.horario, '|')}"
+                       th:data-nombre="${curso.nombre + ' - Sección ' + seccion.seccion}"
+                       onchange="toggleSeccion(this)">
+                <div class="docente">Sección: <span th:text="${seccion.seccion}"></span> - <span th:text="${seccion.docente}"></span></div>
+                <p class="horario" th:each="h : ${seccion.horario}" th:text="${h}"></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="actions">
+        <button class="btn" onclick="verHorario()">Ver Horario Actual</button>
+        <button class="btn btn-success" onclick="actualizarHorario()">Actualizar Horario</button>
+    </div>
+
+    <script>
+        let seccionesSeleccionadas = new Set();
+
+        function toggleSeccion(checkbox) {
+            const seccionDiv = checkbox.parentElement;
+            const seccionData = {
+                codigo: checkbox.value,
+                horarios: checkbox.getAttribute('data-horario').split('|'),
+                nombre: checkbox.getAttribute('data-nombre')
+            };
+
+            if (checkbox.checked) {
+                seccionDiv.classList.add('selected');
+                seccionesSeleccionadas.add(seccionData);
+            } else {
+                seccionDiv.classList.remove('selected');
+                seccionesSeleccionadas.delete(seccionData);
+            }
+        }
+
+        function actualizarHorario() {
+            const codigos = Array.from(seccionesSeleccionadas).map(s => s.codigo);
+            
+            fetch('/api/cursos/seleccion', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(codigos)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.mensajes && data.mensajes.length > 0) {
+                    alert('Advertencias: ' + data.mensajes.join('\n'));
+                }
+                alert('Horario actualizado correctamente!');
+                // Redirigir al horario
+                window.location.href = '/horario';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al actualizar el horario');
+            });
+        }
+
+        function verHorario() {
+            window.location.href = '/horario';
+        }
+
+        // Cargar selecciones existentes al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('/api/cursos/seleccion')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.seleccionados) {
+                        data.seleccionados.forEach(seccion => {
+                            const checkbox = document.querySelector(`input[value="${seccion.seccion}"]`);
+                            if (checkbox) {
+                                checkbox.checked = true;
+                                checkbox.parentElement.classList.add('selected');
+                                // Reconstruir el objeto seccionData
+                                const seccionData = {
+                                    codigo: seccion.seccion,
+                                    horarios: seccion.horario,
+                                    nombre: seccion.seccion // Podríamos mejorar esto
+                                };
+                                seccionesSeleccionadas.add(seccionData);
+                            }
+                        });
+                    }
+                });
+        });
+    </script>
+</body>
+</html>
+'''
+
+### main/resources/templates/horario.html
+'''
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Horario - UNIplanner</title>
+
+</head>
+<body>
+<nav>
+  <a th:href="@{/cursos}">Volver a Cursos</a>
+  <a th:href="@{/horario}">Actualizar Horario</a>
+</nav>
+
+<div class="header">
+  <h1>Mi Horario</h1>
+  <p id="statusMessage">Cargando horario...</p>
+</div>
+
+<div class="actions">
+  <button class="btn" onclick="limpiarHorario()">Limpiar Horario</button>
+  <button class="btn btn-success" onclick="actualizarDesdeBackend()">Actualizar desde Servidor</button>
+  <button class="btn" onclick="toggleDebug()">Mostrar Debug</button>
+</div>
+
+<div id="debugPanel" class="debug-info" style="display:none;">
+  <h3>Información de Debug</h3>
+  <div id="debugContent"></div>
+</div>
+
+<div class="schedule-container">
+  <div class="schedule-grid" id="scheduleGrid"></div>
+</div>
+
+<script>
+class HorarioManager {
+  constructor() {
+    this.daysCanonical = ["Lunes","Martes","Miercoles","Jueves","Viernes","Sabado","Domingo"];
+    this.grid = document.getElementById('scheduleGrid');
+    this.times = this._generarSlots("07:00", "22:00", 30);
+    this.debugContent = document.getElementById('debugContent');
+    this._buildGrid();
+    this._loadFromApi();
+  }
+
+  _log(...args){ 
+    console.log(...args); 
+    if(this.debugContent) {
+      this.debugContent.innerHTML += args.join(' ') + '<br>';
+    }
+  }
+
+  _generarSlots(start, end, stepMin){
+    const parse = t=>{ 
+        const [h,m]=t.split(':').map(Number); 
+        return h*60+m; 
+    };
+    const pad = n => String(n).padStart(2,'0');
+    const slots=[];
+    let cur = parse(start);
+    const endM = parse(end);
+    while(cur < endM){
+      const next = cur + stepMin;
+      const hh = pad(Math.floor(cur/60)); 
+      const mm = pad(cur%60);
+      const nh = pad(Math.floor(next/60)); 
+      const nm = pad(next%60);
+      slots.push({ 
+          time: `${hh}:${mm}`, 
+          display: `${hh}:${mm} - ${nh}:${nm}`, 
+          startM: cur,
+          endM: next
+      });
+      cur = next;
+    }
+    return slots;
+  }
+
+  _normalizeDay(d){
+    if(!d) return d;
+    const lower = d.toLowerCase();
+    const dayMap = {
+        'lunes': 'Lunes',
+        'martes': 'Martes', 
+        'miercoles': 'Miercoles',
+        'miércoles': 'Miercoles',
+        'jueves': 'Jueves',
+        'viernes': 'Viernes',
+        'sabado': 'Sabado',
+        'sábado': 'Sabado',
+        'domingo': 'Domingo'
+    };
+    return dayMap[lower] || d;
+  }
+
+  _buildGrid(){
+    this.grid.innerHTML = '';
+    // corner
+    this.grid.appendChild(this._celda('schedule-corner','Hora \\ Día'));
+    // headers
+    this.daysCanonical.forEach(d => this.grid.appendChild(this._celda('schedule-header', d)));
+    // rows
+    this.times.forEach(slot => {
+      const claseHora = slot.time.endsWith(':00') ? 'schedule-time bold-hour' : 'schedule-time';
+      this.grid.appendChild(this._celda(claseHora, slot.display));
+      // cells per day with data attributes
+      this.daysCanonical.forEach(day => {
+        const cel = this._celda('schedule-cell','');
+        cel.setAttribute('data-day', day);
+        cel.setAttribute('data-time', slot.time);
+        cel.setAttribute('data-start-min', slot.startM);
+        cel.setAttribute('data-end-min', slot.endM);
+        this.grid.appendChild(cel);
+      });
+    });
+  }
+
+  _celda(clase, text){
+    const d = document.createElement('div');
+    d.className = clase;
+    d.textContent = text;
+    return d;
+  }
+
+  _timeToMinutes(t){
+    if(!t) return NaN;
+    const parts = String(t).split(':').map(Number);
+    if(parts.length >=2) return parts[0]*60 + parts[1];
+    return NaN;
+  }
+
+  // carga inicial
+  async _loadFromApi(){
+    this._setStatus('Cargando horario...');
+    try {
+      const res = await fetch('/horario/api');
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      this._log('=== DATOS RECIBIDOS DEL API ===');
+      this._log('Bloques recibidos:', data.bloques ? data.bloques.length : 0);
+      this._log('Contenido:', JSON.stringify(data.bloques, null, 2));
+      
+      if(!data || !Array.isArray(data.bloques) || data.bloques.length===0){
+        this._setStatus('No hay cursos en el horario');
+        return;
+      }
+
+      this._renderBloques(data.bloques);
+      this._setStatus(`Horario cargado (${data.bloques.length} cursos)`);
+    } catch(e){
+      console.error('Error al obtener horario', e);
+      this._setStatus('Error de conexión con servidor');
+    }
+  }
+
+  _setStatus(msg){ 
+    const el = document.getElementById('statusMessage'); 
+    if(el) el.textContent = msg; 
+  }
+
+  // Renderiza bloques
+  _renderBloques(bloques){
+    this._clearVisual();
+    this._log('=== RENDERIZANDO BLOQUES ===');
+    bloques.forEach((b, index) => {
+      this._log(`Bloque ${index + 1}:`, JSON.stringify(b));
+      this._renderBloque(b);
+    });
+  }
+
+  _clearVisual(){
+    this.grid.querySelectorAll('.course-block').forEach(n => n.remove());
+    this.grid.querySelectorAll('.schedule-cell').forEach(c => { 
+        c.innerHTML=''; 
+        c.style.background = '';
+    });
+  }
+
+  _renderBloque(b){
+    const rawDay = b.dia || b.day || '';
+    const dayNorm = this._normalizeDay(rawDay);
+    
+    this._log(`Procesando bloque: ${rawDay} -> ${dayNorm}`);
+    this._log(`Horario: ${b.horaInicio} - ${b.horaFin}`);
+
+    const startMin = this._timeToMinutes(this._shortenTime(b.horaInicio));
+    const endMin = this._timeToMinutes(this._shortenTime(b.horaFin));
+    
+    this._log(`Tiempos en minutos: ${startMin} - ${endMin}`);
+
+    if(isNaN(startMin) || isNaN(endMin) || endMin <= startMin) {
+      this._log('ERROR: Horario inválido en bloque', b);
+      return;
+    }
+
+    const selector = `.schedule-cell[data-day="${dayNorm}"]`;
+    const dayCells = Array.from(this.grid.querySelectorAll(selector));
+    
+    this._log(`Celdas encontradas para ${dayNorm}: ${dayCells.length}`);
+
+    if(dayCells.length === 0){
+      this._log(`ERROR: No hay celdas para día ${dayNorm}`);
+      return;
+    }
+
+    const cellsInRange = dayCells.filter(cell => {
+      const cellStartMin = parseInt(cell.getAttribute('data-start-min'));
+      const cellEndMin = parseInt(cell.getAttribute('data-end-min'));
+      return cellStartMin < endMin && cellEndMin > startMin;
+    });
+
+    this._log(`Celdas en rango: ${cellsInRange.length}`);
+
+    if(cellsInRange.length === 0){
+      this._log('ERROR: Ninguna celda encontrada en el rango');
+      return;
+    }
+
+    const blockEl = document.createElement('div');
+    blockEl.className = 'course-block';
+
+    const nombreCurso = b.nombreCurso || b.nombre || 'Curso';
+    const docente = b.docente || 'Docente no especificado';
+    const codigoSeccion = b.codigoSeccion || 'Código no disponible';
+    const horaInicio = this._shortenTime(b.horaInicio);
+    const horaFin = this._shortenTime(b.horaFin);
+
+    blockEl.innerHTML = `
+      <div class="course-title">${this._truncateText(nombreCurso, 40)}</div>
+      <div class="course-info">${this._truncateText(docente, 35)}</div>
+      <div class="course-info">Sección: ${codigoSeccion}</div>
+      <div class="course-time">${horaInicio} - ${horaFin}</div>
+    `;
+
+    blockEl.title = `${nombreCurso}\nDocente: ${docente}\nSección: ${codigoSeccion}\nHorario: ${horaInicio} - ${horaFin}`;
+
+    const firstCell = cellsInRange[0];
+    const lastCell = cellsInRange[cellsInRange.length - 1];
+
+    const top = firstCell.offsetTop;
+    const left = firstCell.offsetLeft;
+    const height = (lastCell.offsetTop + lastCell.offsetHeight) - firstCell.offsetTop;
+    const width = firstCell.offsetWidth - 4;
+
+    blockEl.style.position = 'absolute';
+    blockEl.style.top = `${top}px`;
+    blockEl.style.left = `${left}px`;
+    blockEl.style.width = `${width}px`;
+    blockEl.style.height = `${height}px`;
+
+    this.grid.appendChild(blockEl);
+    this._log(`✓ Bloque renderizado en ${dayNorm} ${horaInicio}-${horaFin}`);
+  }
+
+  _truncateText(text, maxLength) {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength - 3) + '...';
+  }
+
+  _shortenTime(t){
+    if(!t) return t;
+    if(typeof t !== 'string') t = String(t);
+    const parts = t.split(':');
+    return parts.length >= 2 ? `${parts[0].padStart(2,'0')}:${parts[1].padStart(2,'0')}` : t;
+  }
+
+  async refresh(){
+    await this._loadFromApi();
+  }
+}
+
+let horarioManager = new HorarioManager();
+
+function actualizarDesdeBackend(){ 
+  horarioManager.refresh(); 
+}
+
+function limpiarHorario(){
+  if(!confirm('¿Seguro que quieres limpiar todo el horario?')) return;
+  fetch('/horario/api/clear', { method:'DELETE' })
+    .then(r => {
+      if(r.ok){
+        horarioManager._clearVisual();
+        document.getElementById('statusMessage').textContent = 'Horario limpiado';
+      } else {
+        alert('Error al limpiar horario');
+      }
+    }).catch(e => { 
+      alert('Error al conectar con el servidor'); 
+      console.error(e); 
+    });
+}
+
+function toggleDebug() {
+  const debugPanel = document.getElementById('debugPanel');
+  debugPanel.style.display = debugPanel.style.display === 'none' ? 'block' : 'none';
+}
+</script>
+</body>
+</html>
+'''
+
+### test/java/utp/UNIplanner/UnIplannerApplicationTests.java
+'''
+package utp.UNIplanner;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class UnIplannerApplicationTests {
+
+	@Test
+	void contextLoads() {
+	}
+
+}
+
+'''
+
+### test/java/utp/UNIplanner/Controller/CursoViewControllerTest.java
+'''
+package utp.UNIplanner.Controller;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
+import utp.UNIplanner.controller.CursoViewController;
+import utp.UNIplanner.model.Curso;
+import utp.UNIplanner.model.CursoResponse;
+import utp.UNIplanner.service.DemoService;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+
+@SpringBootTest
+class CursoViewControllerTest {
+
+    @Mock
+    private DemoService demoService;  // Mock del servicio
+
+    @InjectMocks
+    private CursoViewController cursoViewController;  // Controlador que estamos probando
+
+    private MockMvc mockMvc;  // MockMvc para simular las solicitudes HTTP
+
+    @BeforeEach
+    void setUp() {
+        mockMvc = MockMvcBuilders.standaloneSetup(cursoViewController).build();  // Setup de MockMvc
+    }
+
+    // Test para verificar la redirección de la raíz ("/") a "/cursos"
+    @Test
+    void testRedirectToCursos() throws Exception {
+        mockMvc.perform(get("/"))
+                .andExpect(status().is3xxRedirection())  // Verificamos que redirige
+                .andExpect(view().name("redirect:/cursos"));
+    }
+
+    // Test para verificar la vista de todos los cursos
+    @Test
+    void testVerCursos() throws Exception {
+        // Creamos un curso simulado
+        Curso curso = new Curso();  // Aquí se pueden agregar más detalles del curso
+        curso.setNombre("Curso de Prueba");
+        List<Curso> cursos = Arrays.asList(curso);
+        CursoResponse cursoResponse = new CursoResponse(cursos);
+
+        // Simulamos la respuesta del servicio
+        when(demoService.getDemoCursos()).thenReturn(cursoResponse);
+
+        mockMvc.perform(get("/cursos"))
+                .andExpect(status().isOk())  // Verificamos que la respuesta sea OK
+                .andExpect(view().name("cursos"))  // Verificamos que la vista sea "cursos"
+                .andExpect(model().attribute("titulo", "Todos los Cursos"))  // Verificamos el atributo del modelo
+                .andExpect(model().attribute("cursos", cursos));  // Verificamos que los cursos estén en el modelo
+    }
+
+    // Test para verificar la vista de cursos por ciclo
+    @Test
+    void testVerCursosPorCiclo() throws Exception {
+        int ciclo = 1;
+        Curso curso = new Curso();  // Aquí se pueden agregar más detalles del curso
+        curso.setNombre("Curso de Ciclo 1");
+        List<Curso> cursos = Arrays.asList(curso);
+        CursoResponse cursoResponse = new CursoResponse(cursos);
+
+        // Simulamos la respuesta del servicio
+        when(demoService.getCursosPorCiclo(ciclo)).thenReturn(cursoResponse);
+
+        mockMvc.perform(get("/cursos/ciclo/{ciclo}", ciclo))
+                .andExpect(status().isOk())
+                .andExpect(view().name("cursos"))
+                .andExpect(model().attribute("titulo", "Cursos del Ciclo " + ciclo))
+                .andExpect(model().attribute("cursos", cursos));
+    }
+
+    // Test para verificar la vista de cursos por nombre
+    @Test
+    void testVerCursosPorNombre() throws Exception {
+        String nombre = "Curso de Prueba";
+        Curso curso = new Curso();  // Aquí se pueden agregar más detalles del curso
+        curso.setNombre(nombre);
+        List<Curso> cursos = Arrays.asList(curso);
+        CursoResponse cursoResponse = new CursoResponse(cursos);
+
+        // Simulamos la respuesta del servicio
+        when(demoService.getCursosPorNombre(nombre)).thenReturn(cursoResponse);
+
+        mockMvc.perform(get("/cursos/nombre/{nombre}", nombre))
+                .andExpect(status().isOk())
+                .andExpect(view().name("cursos"))
+                .andExpect(model().attribute("titulo", "Cursos que coinciden con: \"" + nombre + "\""))
+                .andExpect(model().attribute("cursos", cursos));
+    }
+
+    // Test para verificar la búsqueda avanzada de cursos
+    @Test
+    void testBuscarCursos() throws Exception {
+        String nombre = "Curso de Prueba";
+        int ciclo = 1;
+        String docente = "Docente Prueba";
+        String horario = "Lunes";
+        Curso curso = new Curso();  // Aquí se pueden agregar más detalles del curso
+        curso.setNombre(nombre);
+        List<Curso> cursos = Arrays.asList(curso);
+        CursoResponse cursoResponse = new CursoResponse(cursos);
+
+        // Simulamos la respuesta del servicio
+        when(demoService.buscarCursosPaginado(
+                Optional.of(nombre),
+                Optional.of(ciclo),
+                Optional.of(docente),
+                Optional.of(horario),
+                0,
+                10
+        )).thenReturn(cursoResponse);
+
+        mockMvc.perform(get("/cursos/buscar")
+                        .param("nombre", nombre)
+                        .param("ciclo", String.valueOf(ciclo))
+                        .param("docente", docente)
+                        .param("horario", horario)
+                        .param("page", "0")
+                        .param("size", "10"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("cursos"))
+                .andExpect(model().attribute("titulo", "Resultados de Búsqueda"))
+                .andExpect(model().attribute("cursos", cursos));
+    }
+}
+
+'''
+
+### test/java/utp/UNIplanner/Controller/DemoControllerTest.java
+'''
+package utp.UNIplanner.Controller;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.web.servlet.MockMvc;
+
+import utp.UNIplanner.controller.DemoController;
+import utp.UNIplanner.model.CursoResponse;
+import utp.UNIplanner.service.DemoService;
+import utp.UNIplanner.service.SeleccionService;
+
+import java.util.Optional;
+
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@WebMvcTest(DemoController.class)
+class DemoControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
+    private DemoService demoService;
+
+    @MockBean
+    private SeleccionService seleccionService;
+
+    @Test
+    void testGetCursosPorNombre() throws Exception {
+        CursoResponse mockResponse = new CursoResponse();
+        mockResponse.setMessage("Found curso");
+        when(demoService.getCursosPorNombre("math")).thenReturn(mockResponse);
+
+        mockMvc.perform(get("/api/cursos/nombre/math"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Found curso"));
+    }
+
+    @Test
+    void testBuscarCursosByCiclo() throws Exception {
+        CursoResponse mockResponse = new CursoResponse();
+        mockResponse.setMessage("Filtered by ciclo");
+        when(demoService.buscarCursosPaginado(
+                Optional.empty(),
+                Optional.of(3),
+                Optional.empty(),
+                Optional.empty(),
+                0,
+                10
+        )).thenReturn(mockResponse);
+
+        mockMvc.perform(get("/api/cursos/buscar")
+                        .param("ciclo", "3"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Filtered by ciclo"));
+    }
+
+    @Test
+    void testBuscarCursosByNombreAndDocente() throws Exception {
+        CursoResponse mockResponse = new CursoResponse();
+        mockResponse.setMessage("Filtered by nombre and docente");
+        when(demoService.buscarCursosPaginado(
+                Optional.of("algebra"),
+                Optional.empty(),
+                Optional.of("Smith"),
+                Optional.empty(),
+                0,
+                10
+        )).thenReturn(mockResponse);
+
+        mockMvc.perform(get("/api/cursos/buscar")
+                        .param("nombre", "algebra")
+                        .param("docente", "Smith"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Filtered by nombre and docente"));
+    }
+
+    @Test
+    void testBuscarCursosWithPagination() throws Exception {
+        CursoResponse mockResponse = new CursoResponse();
+        mockResponse.setMessage("Paged result");
+        when(demoService.buscarCursosPaginado(
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                2,
+                5
+        )).thenReturn(mockResponse);
+
+        mockMvc.perform(get("/api/cursos/buscar")
+                        .param("page", "2")
+                        .param("size", "5"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Paged result"));
+    }
+}
+
+'''
+
+### test/java/utp/UNIplanner/Controller/HorarioControllerTest.java
+'''
+package utp.UNIplanner.Controller;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.*;
+import org.springframework.ui.Model;
+
+import utp.UNIplanner.controller.HorarioController;
+import utp.UNIplanner.model.*;
+import utp.UNIplanner.service.HorarioService;
+import utp.UNIplanner.service.SeleccionService;
+
+import java.time.LocalTime;
+import java.util.Collections;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+class HorarioControllerTest {
+
+    @Mock
+    private HorarioService horarioService;
+
+    @Mock
+    private SeleccionService seleccionService;
+
+    @InjectMocks
+    private HorarioController horarioController;
+
+    @BeforeEach
+    void setUp() {
+        // Inicializa los mocks antes de cada test
+        MockitoAnnotations.openMocks(this);
+    }
+
+    @Test
+    void testVerHorario() {
+        // Simulamos el modelo de Spring
+        Model model = mock(Model.class);
+
+        // Mock de una sección seleccionada por el usuario
+        Seccion seccion = new Seccion("A01", "Prof. X", List.of("Lunes : 08:00 - 10:00"));
+
+        // Simulamos que el servicio de selección devuelve esa sección
+        SeleccionResponse seleccionResponse = new SeleccionResponse(List.of(seccion), Collections.emptyList());
+
+        // Y que el servicio de horario devuelve una respuesta vacía (para este test)
+        HorarioResponse horarioResponse = new HorarioResponse(List.of());
+
+        when(seleccionService.obtenerSeleccionados()).thenReturn(seleccionResponse);
+        when(horarioService.obtenerHorario()).thenReturn(horarioResponse);
+
+        // Ejecutamos el método del controlador
+        String viewName = horarioController.verHorario(model);
+
+        // Verificamos que la vista sea la correcta
+        assertEquals("horario", viewName);
+
+        // Aseguramos que se haya construido el horario con las secciones seleccionadas
+        verify(horarioService).construirHorarioDesdeSelecciones(List.of(seccion));
+
+        // Y que los bloques se hayan añadido al modelo
+        verify(model).addAttribute(eq("bloques"), eq(horarioResponse.getBloques()));
+    }
+
+    @Test
+    void testObtenerHorarioJSON() {
+        // Creamos un mock de una sección seleccionada
+        Seccion seccion = new Seccion("B01", "Prof. Y", List.of("Martes : 10:00 - 12:00"));
+
+        // Mockeamos la respuesta de selección y de horario
+        SeleccionResponse seleccionResponse = new SeleccionResponse(List.of(seccion), Collections.emptyList());
+        HorarioResponse horarioResponse = new HorarioResponse(List.of());
+
+        when(seleccionService.obtenerSeleccionados()).thenReturn(seleccionResponse);
+        when(horarioService.obtenerHorario()).thenReturn(horarioResponse);
+
+        // Ejecutamos el método que retorna el horario como JSON
+        HorarioResponse response = horarioController.obtenerHorarioJSON();
+
+        // Verificamos que la respuesta no sea nula y coincida con lo que mockeamos
+        assertNotNull(response);
+        assertEquals(horarioResponse, response);
+
+        // Confirmamos que se construyó el horario usando las secciones seleccionadas
+        verify(horarioService).construirHorarioDesdeSelecciones(List.of(seccion));
+    }
+
+    @Test
+    void testAgregarBloque() {
+        // Creamos un bloque manualmente (como si lo añadiera el usuario)
+        HorarioBloque bloque = new HorarioBloque("Lunes", LocalTime.of(8, 0), LocalTime.of(10, 0), "Curso A");
+
+        // Llamamos al controlador para agregar el bloque
+        horarioController.agregarBloque(bloque);
+
+        // Verificamos que el servicio de horario realmente lo haya agregado
+        verify(horarioService).agregarBloque(bloque);
+    }
+
+    @Test
+    void testEliminarBloque() {
+        // Simulamos los datos del bloque a eliminar
+        String dia = "Martes";
+        String horaInicio = "10:00";
+        String horaFin = "12:00";
+
+        // Ejecutamos el método del controlador
+        horarioController.eliminarBloque(dia, horaInicio, horaFin);
+
+        // Verificamos que se haya llamado al método del servicio con los valores correctos
+        verify(horarioService).eliminarBloque(eq(dia), eq(LocalTime.parse(horaInicio)), eq(LocalTime.parse(horaFin)));
+    }
+
+    @Test
+    void testLimpiarHorario() {
+        // Llamamos al controlador para limpiar todo
+        horarioController.limpiarHorario();
+
+        // Verificamos que ambos servicios hayan sido limpiados
+        verify(horarioService).limpiar();
+        verify(seleccionService).limpiarSeleccion();
+    }
+}
+
+'''
+
+### test/java/utp/UNIplanner/Service/DemoServiceTest.java
+'''
+package utp.UNIplanner.Service;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+import utp.UNIplanner.model.Curso;
+import utp.UNIplanner.model.CursoResponse;
+import utp.UNIplanner.service.DemoService;
+
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+/**
+ * Pruebas unitarias para la clase DemoService, que simula la carga y búsqueda de cursos
+ * desde un archivo JSON en la aplicación UNIplanner.
+ *
+ * Estas pruebas verifican que:
+ * - Se carguen correctamente los cursos desde el archivo.
+ * - Se puedan filtrar cursos por ciclo, nombre, docente y horario.
+ * - Funcione la búsqueda combinada y la paginación de resultados.
+ *
+ * Ayudan a asegurar que las funciones principales del servicio trabajen como se espera.
+ */
+
+@SpringBootTest
+class DemoServiceTest {
+
+    private DemoService demoService;
+
+    @BeforeEach
+    void setUp() {
+        demoService = new DemoService();
+        demoService.loadData(); // carga cursos.json y construye los índices
+    }
+
+    @Test
+    void testLoadData() {
+        CursoResponse response = demoService.getDemoCursos();
+        assertNotNull(response);
+        assertFalse(response.getCursos().isEmpty(), "Debe cargar cursos.json");
+    }
+
+    @Test
+    void testGetCursosPorCiclo() {
+        CursoResponse response = demoService.getCursosPorCiclo(1);
+        for (Curso c : response.getCursos()) {
+            assertEquals(1, c.getCiclo(), "Todos deben pertenecer al ciclo 1");
+        }
+    }
+
+    @Test
+    void testGetCursosPorNombreExacto() {
+        // asume que existe un curso llamado "Integrador"
+        CursoResponse response = demoService.getCursosPorNombre("Integrador");
+        assertFalse(response.getCursos().isEmpty());
+        assertTrue(response.getCursos().stream()
+                .anyMatch(c -> c.getNombre().equalsIgnoreCase("Integrador")));
+    }
+
+    @Test
+    void testGetCursosPorNombreSubstring() {
+        CursoResponse response = demoService.getCursosPorNombre("inte");
+        assertFalse(response.getCursos().isEmpty());
+        assertTrue(response.getCursos().stream()
+                .anyMatch(c -> c.getNombre().toLowerCase().contains("inte")));
+    }
+
+    @Test
+    void testBuscarCursosPorDocente() {
+        CursoResponse response = demoService.buscarCursos(
+                Optional.empty(),
+                Optional.empty(),
+                Optional.of("García"),
+                Optional.empty()
+        );
+        assertTrue(response.getCursos().stream()
+                .allMatch(c -> c.getSecciones().stream()
+                        .anyMatch(s -> s.getDocente().toLowerCase().contains("tico"))));
+    }
+
+    @Test
+    void testBuscarCursosPorHorario() {
+        CursoResponse response = demoService.buscarCursos(
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.of("08:00")
+        );
+        assertTrue(response.getCursos().stream()
+                .allMatch(c -> c.getSecciones().stream()
+                        .anyMatch(s -> s.getHorario().stream().anyMatch(h -> h.contains("08:00")))));
+    }
+
+    @Test
+    void testBuscarCursosCombinado() {
+        CursoResponse response = demoService.buscarCursos(
+                Optional.of("inte"),
+                Optional.of(1),
+                Optional.of("Ticona"),
+                Optional.empty()
+        );
+        for (Curso c : response.getCursos()) {
+            assertEquals(1, c.getCiclo());
+            assertTrue(c.getNombre().toLowerCase().contains("inte"));
+        }
+    }
+
+    @Test
+    void testBuscarCursosPaginado() {
+        CursoResponse response = demoService.buscarCursosPaginado(
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                0,
+                2
+        );
+        assertTrue(response.getCursos().size() <= 2);
+    }
+}
+
+'''
