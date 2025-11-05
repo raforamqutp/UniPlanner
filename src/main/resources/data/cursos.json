@@ -1,8 +1,302 @@
 {
   "cursos": [
     {
-      "nombre": "CURSO INTEGRADOR I: SISTEMAS - SOFTWARE",
+      "id": "100000I0N2",
+      "nombre": "Matemática I",
+      "ciclo": 1,
+      "prerequisites": [],
+      "secciones": []
+    },
+    {
+      "id": "100000I07N",
+      "nombre": "Principio de Algoritmos",
+      "ciclo": 1,
+      "prerequisites": [],
+      "secciones": []
+    },
+    {
+      "id": "100000N09I",
+      "nombre": "Individuo y Medio Ambiente",
+      "ciclo": 1,
+      "prerequisites": [],
+      "secciones": []
+    },
+    {
+      "id": "100000VU01",
+      "nombre": "Introducción a la vida universitaria",
+      "ciclo": 1,
+      "prerequisites": [],
+      "secciones": []
+    },
+    {
+      "id": "100000N03I",
+      "nombre": "Inglés",
+      "ciclo": 1,
+      "prerequisites": [],
+      "secciones": []
+    },
+    {
+      "id": "100000N01I",
+      "nombre": "Comprensión y redacción de textos I",
+      "ciclo": 1,
+      "prerequisites": [],
+      "secciones": []
+    },
+    {
+      "id": "100000L02Q",
+      "nombre": "Química General",
+      "ciclo": 1,
+      "prerequisites": [],
+      "secciones": []
+    },
+    {
+      "id": "100000N06I",
+      "nombre": "Problemas y desafíos en el Perú actual",
+      "ciclo": 2,
+      "prerequisites": [],
+      "secciones": []
+    },
+    {
+      "id": "100000I13N",
+      "nombre": "Estadística descriptiva y probabilidades",
+      "ciclo": 2,
+      "prerequisites": [],
+      "secciones": []
+    },
+    {
+      "id": "100000I0N3",
+      "nombre": "Matemática II",
+      "ciclo": 2,
+      "prerequisites": [],
+      "secciones": []
+    },
+    {
+      "id": "100000SI13",
+      "nombre": "Matemática discreta",
+      "ciclo": 2,
+      "prerequisites": [],
+      "secciones": []
+    },
+    {
+      "id": "100000N05I",
+      "nombre": "Inglés II",
+      "ciclo": 2,
+      "prerequisites": [],
+      "secciones": []
+    },
+    {
+      "id": "100000A16E",
+      "nombre": "Comprensión y redacción de textos II",
+      "ciclo": 2,
+      "prerequisites": [],
+      "secciones": []
+    },
+    {
+      "id": "100000TI50",
+      "nombre": "Introducción a las tic",
+      "ciclo": 2,
+      "prerequisites": [],
+      "secciones": []
+    },
+    {
+      "id": "100000I0N6",
+      "nombre": "Cálculo I",
+      "ciclo": 3,
+      "prerequisites": [],
+      "secciones": []
+    },
+    {
+      "id": "100000F1I1",
+      "nombre": "Mecánica clásica",
+      "ciclo": 3,
+      "prerequisites": [],
+      "secciones": []
+    },
+    {
+      "id": "100000I17N",
+      "nombre": "Estadística inferencial",
+      "ciclo": 3,
+      "prerequisites": [],
+      "secciones": []
+    },
+    {
+      "id": "100000N08I",
+      "nombre": "Inglés III",
+      "ciclo": 3,
+      "prerequisites": [],
+      "secciones": []
+    },
+    {
+      "id": "100000N07C",
+      "nombre": "Ciudadanía y reflexión ética",
+      "ciclo": 3,
+      "prerequisites": [],
+      "secciones": []
+    },
+    {
+      "id": "100000I50N",
+      "nombre": "Taller de programación",
+      "ciclo": 3,
+      "prerequisites": [],
+      "secciones": []
+    },
+    {
+      "id": "100000I1N0",
+      "nombre": "Cálculo II",
+      "ciclo": 4,
+      "prerequisites": [],
+      "secciones": []
+    },
+    {
+      "id": "100000F2I1",
+      "nombre": "Fundamentos de electromagnetismo",
+      "ciclo": 4,
+      "prerequisites": [],
+      "secciones": []
+    },
+    {
+      "id": "100000SI35",
+      "nombre": "Análisis y diseño de algoritmos",
+      "ciclo": 4,
+      "prerequisites": [],
+      "secciones": []
+    },
+    {
+      "id": "100000N02C",
+      "nombre": "Investigación académica",
+      "ciclo": 4,
+      "prerequisites": [],
+      "secciones": []
+    },
+    {
+      "id": "100000N10I",
+      "nombre": "Inglés IV",
+      "ciclo": 4,
+      "prerequisites": [],
+      "secciones": []
+    },
+    {
+      "id": "100000I55N",
+      "nombre": "Programación orientada a objetos",
+      "ciclo": 4,
+      "prerequisites": [],
+      "secciones": []
+    },
+    {
+      "id": "100000I52N",
+      "nombre": "Base de datos",
+      "ciclo": 4,
+      "prerequisites": [],
+      "secciones": []
+    },
+    {
+      "id": "100000I04N",
+      "nombre": "Herramientas informáticas para la toma de decisiones",
+      "ciclo": 5,
+      "prerequisites": [],
+      "secciones": []
+    },
+    {
+      "id": "100000SI47",
+      "nombre": "Diseño de patrones",
+      "ciclo": 5,
+      "prerequisites": [],
+      "secciones": []
+    },
+    {
+      "id": "100000SI46",
+      "nombre": "Base de datos II",
+      "ciclo": 5,
+      "prerequisites": [],
+      "secciones": []
+    },
+    {
+      "id": "100000I41N",
+      "nombre": "Redes y comunicación de datos I",
+      "ciclo": 5,
+      "prerequisites": [],
+      "secciones": []
+    },
+    {
+      "id": "100000I57N",
+      "nombre": "Taller de programación web",
+      "ciclo": 5,
+      "prerequisites": [],
+      "secciones": []
+    },
+    {
+      "id": "100000I56N",
+      "nombre": "Sistemas operativos",
+      "ciclo": 5,
+      "prerequisites": [],
+      "secciones": []
+    },
+    {
+      "id": "100000I53N",
+      "nombre": "Algoritmos y estructuras de datos",
+      "ciclo": 5,
+      "prerequisites": [],
+      "secciones": []
+    },
+    {
+      "id": "100000SI58",
+      "nombre": "Hojas de estilo en cascada avanzado",
       "ciclo": 6,
+      "prerequisites": [
+        "100000I57N"
+      ],
+      "secciones": []
+    },
+    {
+      "id": "100000SI57",
+      "nombre": "Marcos de desarrollo web",
+      "ciclo": 6,
+      "prerequisites": [
+        "100000I57N"
+      ],
+      "secciones": []
+    },
+    {
+      "id": "100000SI56",
+      "nombre": "Java script avanzado",
+      "ciclo": 6,
+      "prerequisites": [
+        "100000I57N"
+      ],
+      "secciones": []
+    },
+    {
+      "id": "100000I33N",
+      "nombre": "Gestión de proyectos",
+      "ciclo": 6,
+      "prerequisites": [
+        "100000I04N"
+      ],
+      "secciones": []
+    },
+    {
+      "id": "100000N21I",
+      "nombre": "Administración y organización de empresas",
+      "ciclo": 6,
+      "prerequisites": [],
+      "secciones": []
+    },
+    {
+      "id": "100000I60N",
+      "nombre": "Análisis y diseño de sistemas de información",
+      "ciclo": 6,
+      "prerequisites": [
+        "100000I53N"
+      ],
+      "secciones": []
+    },
+    {
+      "id": "100000I58N",
+      "nombre": "Curso integrador I: sistemas - software",
+      "ciclo": 6,
+      "prerequisites": [
+        "100000I53N"
+      ],
       "secciones": [
         {
           "seccion": "11335",
@@ -31,8 +325,42 @@
       ]
     },
     {
-      "nombre": "HERRAMIENTAS DE DESARROLLO",
+      "id": "100000ST61",
+      "nombre": "Desarrollo web integrado",
       "ciclo": 7,
+      "prerequisites": [
+        "100000SI56",
+        "100000SI57",
+        "100000SI58"
+      ],
+      "secciones": [
+        {
+          "seccion": "12240",
+          "docente": "VALENCIA GALLEGOS,OMAR JULIO",
+          "horario": [
+            "Miercoles : 14:30 - 16:45"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "100000I45N",
+      "nombre": "Seguridad informática",
+      "ciclo": 7,
+      "prerequisites": [
+        "100000I41N"
+      ],
+      "secciones": []
+    },
+    {
+      "id": "100000S61T",
+      "nombre": "Herramientas de desarrollo",
+      "ciclo": 7,
+      "prerequisites": [
+        "100000SI56",
+        "100000SI57",
+        "100000SI58"
+      ],
       "secciones": [
         {
           "seccion": "12242",
@@ -45,21 +373,31 @@
       ]
     },
     {
-      "nombre": "DESARROLLO WEB INTEGRADO",
+      "id": "100000SI69",
+      "nombre": "Teoría de sistemas",
       "ciclo": 7,
-      "secciones": [
-        {
-          "seccion": "12240",
-          "docente": "VALENCIA GALLEGOS,OMAR JULIO",
-          "horario": [
-            "Miercoles : 14:30 - 16:45"
-          ]
-        }
-      ]
+      "prerequisites": [
+        "100000I53N",
+        "100000TI50"
+      ],
+      "secciones": []
     },
     {
-      "nombre": "DISEÑO DE PRODUCTOS Y SERVICIOS",
+      "id": "100000SI68",
+      "nombre": "Lenguajes de programación",
       "ciclo": 7,
+      "prerequisites": [
+        "100000I53N"
+      ],
+      "secciones": []
+    },
+    {
+      "id": "100000SI67",
+      "nombre": "Diseño de productos y servicios",
+      "ciclo": 7,
+      "prerequisites": [
+        "100000N21I"
+      ],
       "secciones": [
         {
           "seccion": "12292",
@@ -92,30 +430,30 @@
       ]
     },
     {
-      "nombre": "DISEÑO E IMPLEMENTACIÓN DE ARQUITECTURA EMPRESARIAL",
-      "ciclo": 8,
-      "secciones": [
-        {
-          "seccion": "12893",
-          "docente": "CHAVEZ CUARITE,DUILIO ANDRE",
-          "horario": [
-            "Lunes : 17:00 - 18:30",
-            "Jueves : 17:00 - 18:30"
-          ]
-        },
-        {
-          "seccion": "12881",
-          "docente": "BEGAZO ARENAS,OSCAR ALFREDO",
-          "horario": [
-            "Martes : 20:15 - 21:45",
-            "Viernes : 20:15 - 21:45"
-          ]
-        }
-      ]
+      "id": "100000SI66",
+      "nombre": "Liderazgo y gestión de equipos",
+      "ciclo": 7,
+      "prerequisites": [
+        "100000N21I"
+      ],
+      "secciones": []
     },
     {
-      "nombre": "GESTIÓN DEL SERVICIO TI",
+      "id": "100000S73T",
+      "nombre": "Herramientas de prototipado",
       "ciclo": 8,
+      "prerequisites": [
+        "100000SI67"
+      ],
+      "secciones": []
+    },
+    {
+      "id": "100000S72T",
+      "nombre": "Gestión del servicio ti",
+      "ciclo": 8,
+      "prerequisites": [
+        "100000I60N"
+      ],
       "secciones": [
         {
           "seccion": "12882",
@@ -136,8 +474,12 @@
       ]
     },
     {
-      "nombre": "NEGOCIACIÓN Y NARRATIVA",
+      "id": "100000S71T",
+      "nombre": "Negociación y narrativa",
       "ciclo": 8,
+      "prerequisites": [
+        "100000N21I"
+      ],
       "secciones": [
         {
           "seccion": "12897",
@@ -191,8 +533,12 @@
       ]
     },
     {
-      "nombre": "INNOVACIÓN Y TRANSFORMACIÓN DIGITAL",
+      "id": "100000TD09",
+      "nombre": "Innovación y transformación digital",
       "ciclo": 8,
+      "prerequisites": [
+        "100000I60N"
+      ],
       "secciones": [
         {
           "seccion": "12894",
@@ -211,6 +557,183 @@
           ]
         }
       ]
+    },
+    {
+      "id": "100000H01C",
+      "nombre": "Herramientas para la comunicación efectiva",
+      "ciclo": 8,
+      "prerequisites": [
+        "100000I58N"
+      ],
+      "secciones": []
+    },
+    {
+      "id": "100000S06I",
+      "nombre": "Diseño e implementación de arquitectura empresarial",
+      "ciclo": 8,
+      "prerequisites": [
+        "100000I60N"
+      ],
+      "secciones": [
+        {
+          "seccion": "12893",
+          "docente": "CHAVEZ CUARITE,DUILIO ANDRE",
+          "horario": [
+            "Lunes : 17:00 - 18:30",
+            "Jueves : 17:00 - 18:30"
+          ]
+        },
+        {
+          "seccion": "12881",
+          "docente": "BEGAZO ARENAS,OSCAR ALFREDO",
+          "horario": [
+            "Martes : 20:15 - 21:45",
+            "Viernes : 20:15 - 21:45"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "100000I62N",
+      "nombre": "Inteligencia de negocios",
+      "ciclo": 8,
+      "prerequisites": [
+        "100000SI46",
+        "100000S61T"
+      ],
+      "secciones": []
+    },
+    {
+      "id": "100000SI87",
+      "nombre": "Interacción hombre maquina",
+      "ciclo": 9,
+      "prerequisites": [
+        "100000I60N",
+        "100000SI67"
+      ],
+      "secciones": []
+    },
+    {
+      "id": "100000S02I",
+      "nombre": "Gestión del conocimiento",
+      "ciclo": 9,
+      "prerequisites": [
+        "100000I62N"
+      ],
+      "secciones": []
+    },
+    {
+      "id": "100000S07I",
+      "nombre": "Planeamiento estratégico de las tics",
+      "ciclo": 9,
+      "prerequisites": [
+        "100000S06I"
+      ],
+      "secciones": []
+    },
+    {
+      "id": "100000SI86",
+      "nombre": "Sistemas de información empresarial",
+      "ciclo": 9,
+      "prerequisites": [
+        "100000I60N",
+        "100000N21I"
+      ],
+      "secciones": []
+    },
+    {
+      "id": "100000S09I",
+      "nombre": "Curso integrador II: sistemas",
+      "ciclo": 9,
+      "prerequisites": [
+        "100000S06I",
+        "100000I62N",
+        "100000I58N"
+      ],
+      "secciones": []
+    },
+    {
+      "id": "100000I67N",
+      "nombre": "Formación para la investigación - sistemas",
+      "ciclo": 9,
+      "prerequisites": [
+        "100000I58N",
+        "100000A16E",
+        "100000N02C"
+      ],
+      "secciones": []
+    },
+    {
+      "id": "100000SI97",
+      "nombre": "Servicios cloud",
+      "ciclo": 10,
+      "prerequisites": [
+        "100000I41N"
+      ],
+      "secciones": []
+    },
+    {
+      "id": "100000SI96",
+      "nombre": "Nuevas tecnologías y tendencias",
+      "ciclo": 10,
+      "prerequisites": [
+        "100000TD09"
+      ],
+      "secciones": []
+    },
+    {
+      "id": "100000NI24",
+      "nombre": "Ingeniería económica",
+      "ciclo": 10,
+      "prerequisites": [
+        "100000SI86"
+      ],
+      "secciones": []
+    },
+    {
+      "id": "100000N11I",
+      "nombre": "Formación para la empleabilidad",
+      "ciclo": 10,
+      "prerequisites": [
+        "100000H01C"
+      ],
+      "secciones": []
+    },
+    {
+      "id": "100000N25I",
+      "nombre": "Ética profesional",
+      "ciclo": 10,
+      "prerequisites": [
+        "100000I67N"
+      ],
+      "secciones": []
+    },
+    {
+      "id": "100000S11I",
+      "nombre": "Taller de investigación - sistemas",
+      "ciclo": 10,
+      "prerequisites": [
+        "100000I67N"
+      ],
+      "secciones": []
+    },
+    {
+      "id": "100000S62F",
+      "nombre": "Desarrollo de software",
+      "ciclo": 10,
+      "prerequisites": [
+        "100000I60N"
+      ],
+      "secciones": []
+    },
+    {
+      "id": "100000ZZ28",
+      "nombre": "Elementary business english",
+      "ciclo": 10,
+      "prerequisites": [
+        "100000N10I"
+      ],
+      "secciones": []
     }
   ]
 }

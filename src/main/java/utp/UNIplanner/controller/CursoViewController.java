@@ -76,4 +76,10 @@ public class CursoViewController {
         model.addAttribute("size", size);
         return "cursos";
     }
+    
+    @GetMapping("/cursos/avance")
+    public String verAvanceDemo() {
+        return "cursos-avance-demo";
+    }
+}
 }
