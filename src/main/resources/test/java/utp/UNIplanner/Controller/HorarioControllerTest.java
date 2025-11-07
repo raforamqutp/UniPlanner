@@ -1,12 +1,17 @@
-package utp.UNIplanner.Controller;
+package utp.UNIplanner.controller;
 
-import org.junit.jupiter.api.BeforeEach;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-import org.mockito.*;
-import org.springframework.ui.Model;
-
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
 import utp.UNIplanner.controller.HorarioController;
-import utp.UNIplanner.model.*;
+import utp.UNIplanner.model.HorarioBloque;
+import utp.UNIplanner.model.HorarioResponse;
+import utp.UNIplanner.model.Seccion;
+import utp.UNIplanner.model.SeleccionResponse;
 import utp.UNIplanner.service.HorarioService;
 import utp.UNIplanner.service.SeleccionService;
 
@@ -14,111 +19,115 @@ import java.time.LocalTime;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@WebMvcTest(HorarioControllerTest.class)
 class HorarioControllerTest {
 
-    @Mock
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
     private HorarioService horarioService;
 
-    @Mock
+    @MockBean
     private SeleccionService seleccionService;
 
-    @InjectMocks
-    private HorarioController horarioController;
-
-    @BeforeEach
-    void setUp() {
-        // Inicializa los mocks antes de cada test
-        MockitoAnnotations.openMocks(this);
-    }
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Test
-    void testVerHorario() {
-        // Simulamos el modelo de Spring
-        Model model = mock(Model.class);
-
-        // Mock de una sección seleccionada por el usuario
-        Seccion seccion = new Seccion("A01", "Prof. X", List.of("Lunes : 08:00 - 10:00"));
-
-        // Simulamos que el servicio de selección devuelve esa sección
-        SeleccionResponse seleccionResponse = new SeleccionResponse(List.of(seccion), Collections.emptyList());
-
-        // Y que el servicio de horario devuelve una respuesta vacía (para este test)
-        HorarioResponse horarioResponse = new HorarioResponse(List.of());
-
+    void testVerHorario_DevuelveVistaConBloques() throws Exception {
+        // Simular la respuesta del SeleccionService
+        Seccion seccionMock = new Seccion("12345", "Docente Mock", List.of("Lunes : 08:00 - 10:00"));
+        SeleccionResponse seleccionResponse = new SeleccionResponse(List.of(seccionMock), Collections.emptyList());
         when(seleccionService.obtenerSeleccionados()).thenReturn(seleccionResponse);
+
+        // Simular la respuesta del HorarioService
+        HorarioBloque bloqueMock = new HorarioBloque("Lunes", LocalTime.of(8, 0), LocalTime.of(10, 0), "Curso Mock");
+        HorarioResponse horarioResponse = new HorarioResponse(List.of(bloqueMock));
         when(horarioService.obtenerHorario()).thenReturn(horarioResponse);
 
-        // Ejecutamos el método del controlador
-        String viewName = horarioController.verHorario(model);
+        mockMvc.perform(get("/horario"))
+                .andExpect(status().isOk()) // Espera un 200 OK
+                .andExpect(view().name("horario")) // Espera que se devuelva la vista "horario.html"
+                .andExpect(model().attributeExists("bloques")) // Espera que el modelo contenga "bloques"
+                .andExpect(model().attribute("bloques", List.of(bloqueMock))); // Verifica el contenido
 
-        // Verificamos que la vista sea la correcta
-        assertEquals("horario", viewName);
-
-        // Aseguramos que se haya construido el horario con las secciones seleccionadas
-        verify(horarioService).construirHorarioDesdeSelecciones(List.of(seccion));
-
-        // Y que los bloques se hayan añadido al modelo
-        verify(model).addAttribute(eq("bloques"), eq(horarioResponse.getBloques()));
+        // --- Verify ---
+        verify(seleccionService).obtenerSeleccionados();
+        verify(horarioService).construirHorarioDesdeSelecciones(List.of(seccionMock));
+        verify(horarioService).obtenerHorario();
     }
 
     @Test
-    void testObtenerHorarioJSON() {
-        // Creamos un mock de una sección seleccionada
-        Seccion seccion = new Seccion("B01", "Prof. Y", List.of("Martes : 10:00 - 12:00"));
-
-        // Mockeamos la respuesta de selección y de horario
-        SeleccionResponse seleccionResponse = new SeleccionResponse(List.of(seccion), Collections.emptyList());
-        HorarioResponse horarioResponse = new HorarioResponse(List.of());
-
+    void testObtenerHorarioJSON_DevuelveJSON() throws Exception {
+        // Simular la respuesta del SeleccionService (esta vez vacía para variar)
+        SeleccionResponse seleccionResponse = new SeleccionResponse(Collections.emptyList(), Collections.emptyList());
         when(seleccionService.obtenerSeleccionados()).thenReturn(seleccionResponse);
+        
+        // Simular la respuesta del HorarioService
+        HorarioBloque bloqueMock = new HorarioBloque("Martes", LocalTime.of(10, 0), LocalTime.of(12, 0), "Curso JSON");
+        HorarioResponse horarioResponse = new HorarioResponse(List.of(bloqueMock));
         when(horarioService.obtenerHorario()).thenReturn(horarioResponse);
 
-        // Ejecutamos el método que retorna el horario como JSON
-        HorarioResponse response = horarioController.obtenerHorarioJSON();
-
-        // Verificamos que la respuesta no sea nula y coincida con lo que mockeamos
-        assertNotNull(response);
-        assertEquals(horarioResponse, response);
-
-        // Confirmamos que se construyó el horario usando las secciones seleccionadas
-        verify(horarioService).construirHorarioDesdeSelecciones(List.of(seccion));
+        mockMvc.perform(get("/horario/api"))
+                .andExpect(status().isOk()) // Espera un 200 OK
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.bloques").isArray())
+                .andExpect(jsonPath("$.bloques[0].nombre").value("Curso JSON"))
+                .andExpect(jsonPath("$.bloques[0].dia").value("Martes"));
+        
+        // --- Verify ---
+        verify(horarioService).construirHorarioDesdeSelecciones(Collections.emptyList());
     }
 
     @Test
-    void testAgregarBloque() {
-        // Creamos un bloque manualmente (como si lo añadiera el usuario)
-        HorarioBloque bloque = new HorarioBloque("Lunes", LocalTime.of(8, 0), LocalTime.of(10, 0), "Curso A");
+    void testAgregarBloque_LlamaAlServicio() throws Exception {
+        HorarioBloque bloqueNuevo = new HorarioBloque("Miércoles", LocalTime.of(14, 0), LocalTime.of(16, 0), "Curso Agregado");
+        
+        String bloqueJson = objectMapper.writeValueAsString(bloqueNuevo);
 
-        // Llamamos al controlador para agregar el bloque
-        horarioController.agregarBloque(bloque);
+        mockMvc.perform(post("/horario/api")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(bloqueJson))
+                .andExpect(status().isOk()); // Espera un 200 OK
 
-        // Verificamos que el servicio de horario realmente lo haya agregado
-        verify(horarioService).agregarBloque(bloque);
+        verify(horarioService).agregarBloque(any(HorarioBloque.class));
     }
 
     @Test
-    void testEliminarBloque() {
-        // Simulamos los datos del bloque a eliminar
-        String dia = "Martes";
-        String horaInicio = "10:00";
-        String horaFin = "12:00";
+    void testEliminarBloque_LlamaAlServicioConParams() throws Exception {
+        // --- Setup ---
+        String dia = "Jueves";
+        String horaInicio = "09:00";
+        String horaFin = "11:00";
 
-        // Ejecutamos el método del controlador
-        horarioController.eliminarBloque(dia, horaInicio, horaFin);
+        mockMvc.perform(delete("/horario/api")
+                .param("dia", dia)
+                .param("horaInicio", horaInicio)
+                .param("horaFin", horaFin))
+                .andExpect(status().isOk());
 
-        // Verificamos que se haya llamado al método del servicio con los valores correctos
-        verify(horarioService).eliminarBloque(eq(dia), eq(LocalTime.parse(horaInicio)), eq(LocalTime.parse(horaFin)));
+        // --- Verify ---
+        verify(horarioService).eliminarBloque(
+                eq(dia),
+                eq(LocalTime.parse(horaInicio)),
+                eq(LocalTime.parse(horaFin))
+        );
     }
 
     @Test
-    void testLimpiarHorario() {
-        // Llamamos al controlador para limpiar todo
-        horarioController.limpiarHorario();
+    void testLimpiarHorario_LlamaAmbosServicios() throws Exception {
+        mockMvc.perform(delete("/horario/api/clear"))
+                .andExpect(status().isOk());
 
-        // Verificamos que ambos servicios hayan sido limpiados
+        // --- Verify ---
         verify(horarioService).limpiar();
         verify(seleccionService).limpiarSeleccion();
     }
