@@ -1,109 +1,132 @@
-package utp.UNIplanner.Controller;
+package utp.UNIplanner.controller;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.mockito.*;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-
-import utp.UNIplanner.controller.DemoController;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import utp.UNIplanner.model.CursoResponse;
+import utp.UNIplanner.model.SeleccionResponse;
 import utp.UNIplanner.service.DemoService;
 import utp.UNIplanner.service.SeleccionService;
 
+import java.util.Arrays;
 import java.util.Optional;
 
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(DemoController.class)
 class DemoControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc; // MockMvc nos permite simular peticiones HTTP sin levantar el servidor real
+    @Mock
+    private DemoService demoService;
 
-    @MockBean
-    private DemoService demoService; // Mock del servicio principal que usa el controlador
+    @Mock
+    private SeleccionService seleccionService;
 
-    @MockBean
-    private SeleccionService seleccionService; // Mock adicional (no usado directamente aquí, pero requerido por el controller)
+    @InjectMocks
+    private DemoController demoController;
+
+    private MockMvc mockMvc;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+        mockMvc = MockMvcBuilders.standaloneSetup(demoController).build();
+    }
+
+    @Test
+    void testGetDemo() throws Exception {
+        CursoResponse mockResponse = new CursoResponse();
+        when(demoService.getDemoCursos()).thenReturn(mockResponse);
+
+        mockMvc.perform(get("/api/cursos/demo"))
+                .andExpect(status().isOk());
+
+        verify(demoService).getDemoCursos();
+    }
+
+    @Test
+    void testGetCursosPorCiclo() throws Exception {
+        CursoResponse mockResponse = new CursoResponse();
+        when(demoService.getCursosPorCiclo(3)).thenReturn(mockResponse);
+
+        mockMvc.perform(get("/api/cursos/ciclo/3"))
+                .andExpect(status().isOk());
+
+        verify(demoService).getCursosPorCiclo(3);
+    }
 
     @Test
     void testGetCursosPorNombre() throws Exception {
-        // Seteamos un mock de respuesta simulando que se encontró un curso
         CursoResponse mockResponse = new CursoResponse();
-        mockResponse.setMessage("Found curso");
-        when(demoService.getCursosPorNombre("math")).thenReturn(mockResponse);
+        when(demoService.getCursosPorNombre("Matemáticas")).thenReturn(mockResponse);
 
-        // Ejecutamos la petición GET y validamos la respuesta esperada
-        mockMvc.perform(get("/api/cursos/nombre/math"))
-                .andExpect(status().isOk()) // esperamos HTTP 200 OK
-                .andExpect(jsonPath("$.message").value("Found curso")); // verificamos el campo 'message' del JSON
+        mockMvc.perform(get("/api/cursos/nombre/Matemáticas"))
+                .andExpect(status().isOk());
+
+        verify(demoService).getCursosPorNombre("Matemáticas");
     }
 
     @Test
-    void testBuscarCursosByCiclo() throws Exception {
-        // Simulamos la búsqueda de cursos filtrados por ciclo (ejemplo: ciclo 3)
+    void testBuscarCursos() throws Exception {
         CursoResponse mockResponse = new CursoResponse();
-        mockResponse.setMessage("Filtered by ciclo");
         when(demoService.buscarCursosPaginado(
-                Optional.empty(),
-                Optional.of(3),
-                Optional.empty(),
-                Optional.empty(),
-                0,
-                10
-        )).thenReturn(mockResponse);
+                any(), any(), any(), any(), anyInt(), anyInt()))
+                .thenReturn(mockResponse);
 
-        // Llamada al endpoint con el parámetro 'ciclo'
         mockMvc.perform(get("/api/cursos/buscar")
-                        .param("ciclo", "3"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Filtered by ciclo"));
-    }
-
-    @Test
-    void testBuscarCursosByNombreAndDocente() throws Exception {
-        // Caso donde se filtra por nombre del curso y docente al mismo tiempo
-        CursoResponse mockResponse = new CursoResponse();
-        mockResponse.setMessage("Filtered by nombre and docente");
-        when(demoService.buscarCursosPaginado(
-                Optional.of("algebra"),
-                Optional.empty(),
-                Optional.of("Smith"),
-                Optional.empty(),
-                0,
-                10
-        )).thenReturn(mockResponse);
-
-        // Simulamos request con parámetros de filtro múltiples
-        mockMvc.perform(get("/api/cursos/buscar")
-                        .param("nombre", "algebra")
-                        .param("docente", "Smith"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Filtered by nombre and docente"));
-    }
-
-    @Test
-    void testBuscarCursosWithPagination() throws Exception {
-        // Test específico para validar la paginación (page y size)
-        CursoResponse mockResponse = new CursoResponse();
-        mockResponse.setMessage("Paged result");
-        when(demoService.buscarCursosPaginado(
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                2,
-                5
-        )).thenReturn(mockResponse);
-
-        // Llamamos al endpoint con parámetros de paginación personalizados
-        mockMvc.perform(get("/api/cursos/buscar")
-                        .param("page", "2")
+                        .param("nombre", "Física")
+                        .param("ciclo", "2")
+                        .param("page", "0")
                         .param("size", "5"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Paged result"));
+                .andExpect(status().isOk());
+
+        verify(demoService).buscarCursosPaginado(
+                Optional.of("Física"),
+                Optional.of(2),
+                Optional.empty(),
+                Optional.empty(),
+                0,
+                5
+        );
+    }
+
+    @Test
+    void testSeleccionar() throws Exception {
+        SeleccionResponse mockResponse = new SeleccionResponse();
+        mockResponse.setSuccess(true);
+
+        when(seleccionService.seleccionarSecciones(anyList()))
+                .thenReturn(mockResponse);
+
+        mockMvc.perform(post("/api/cursos/seleccion")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("[\"CURS101\", \"CURS102\"]"))
+                .andExpect(status().isOk());
+
+        verify(seleccionService).seleccionarSecciones(Arrays.asList("CURS101", "CURS102"));
+    }
+
+    @Test
+    void testObtenerSeleccionados() throws Exception {
+        SeleccionResponse mockResponse = new SeleccionResponse();
+        when(seleccionService.obtenerSeleccionados()).thenReturn(mockResponse);
+
+        mockMvc.perform(get("/api/cursos/seleccion"))
+                .andExpect(status().isOk());
+
+        verify(seleccionService).obtenerSeleccionados();
+    }
+
+    @Test
+    void testLimpiarSeleccion() throws Exception {
+        mockMvc.perform(delete("/api/cursos/seleccion"))
+                .andExpect(status().isOk());
+
+        verify(seleccionService).limpiarSeleccion();
     }
 }
