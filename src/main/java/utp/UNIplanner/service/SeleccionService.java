@@ -35,14 +35,18 @@ public class SeleccionService {
         }
     }
 
+
     public SeleccionService(DemoService demoService) {
         this.demoService = demoService;
     }
 
+    // Ahorea reemplaza en vez de añadir
     public SeleccionResponse seleccionarSecciones(List<String> codigos) {
+        // 'codigos' AHORA ES LA LISTA COMPLETA Y DEFINITIVA
         List<Seccion> nuevas = new ArrayList<>();
         List<String> mensajes = new ArrayList<>();
 
+        // 1. Buscar secciones en los cursos existentes
         for (String codigo : codigos) {
             Optional<Seccion> seccion = demoService.getDemoCursos().getCursos().stream()
                     .flatMap(c -> c.getSecciones().stream())
@@ -56,18 +60,18 @@ public class SeleccionService {
             }
         }
 
-        // Detectar choques de horario entre los ya seleccionados + nuevos
-        List<Seccion> total = new ArrayList<>(seleccionados);
-        total.addAll(nuevas);
-        List<String> conflictos = detectarChoques(total); // Llama a la nueva lógica
+        // 2. Detectar choques de horario SOLO en la nueva lista
+        List<String> conflictos = detectarChoques(nuevas);
         mensajes.addAll(conflictos);
 
+        // 3. Si no hay conflictos, REEMPLAZAR la lista antigua
         if (conflictos.isEmpty()) {
-            // Solo agregar si no hay conflictos
-            seleccionados.addAll(nuevas);
+            this.seleccionados.clear(); // BORRAR LA LISTA ANTIGUA
+            this.seleccionados.addAll(nuevas); // AÑADIR LA NUEVA LISTA COMPLETA
         }
 
-        return new SeleccionResponse(new ArrayList<>(seleccionados), mensajes);
+        // Devolvemos la lista actual (la nueva si no hubo error, o la vieja si hubo error)
+        return new SeleccionResponse(new ArrayList<>(this.seleccionados), mensajes);
     }
 
     public SeleccionResponse obtenerSeleccionados() {
@@ -78,10 +82,6 @@ public class SeleccionService {
         seleccionados.clear();
     }
 
-    /**
-     * Parsea un string de horario (ej. "Martes : 08:00 - 10:00") en un objeto Intervalo.
-     * Devuelve Optional.empty() si el formato es inválido.
-     */
     private Optional<Intervalo> parseHorarioString(String horarioStr, String seccionId) {
         try {
             String[] partesDiaHora = horarioStr.split(" : ");
@@ -121,7 +121,6 @@ public class SeleccionService {
         }
     }
 
-    // NUEVA LÓGICA DE CHOQUES
     private List<String> detectarChoques(List<Seccion> secciones) {
         List<String> conflictos = new ArrayList<>();
         
@@ -160,7 +159,6 @@ public class SeleccionService {
                 }
             }
         }
-
         return conflictos;
     }
 }

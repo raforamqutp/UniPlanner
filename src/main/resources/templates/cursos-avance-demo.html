@@ -154,6 +154,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <div class="safe-container">
@@ -170,46 +171,13 @@
             </div>
     </div>
 
-    <script>
-        // DATOS TEMPORALES (luego será cargado de data/courses) ---
-        const cursosPorCiclo = {
-            1: [
-                { id: '100000I0N2', name: 'Matemática I', prerequisites: [] },
-                { id: '100000I07N', name: 'Principio de Algoritmos', prerequisites: [] },
-                { id: '100000N09I', name: 'Individuo y Medio Ambiente', prerequisites: [] },
-            ],
-            2: [
-                { id: '100000N06I', name: 'Problemas y desafíos...', prerequisites: [] },
-                { id: '100000I13N', name: 'Estadística descriptiva', prerequisites: [] },
-                { id: '100000I0N3', name: 'Matemática II', prerequisites: ['100000I0N2'] }, // Prerrequisito: Mat I
-            ],
-            3: [
-                { id: '100000I0N6', name: 'Cálculo I', prerequisites: ['100000I0N3'] }, // Prerrequisito: Mat II
-                { id: '100000I50N', name: 'Taller de programación', prerequisites: ['100000I07N'] }, // Prerrequisito: Principio de Alg.
-            ],
-            4: [
-                { id: '100000I1N0', name: 'Cálculo II', prerequisites: ['100000I0N6'] }, // Prerrequisito: Cálculo I
-                { id: '100000I55N', name: 'Programación orientada a objetos', prerequisites: ['100000I50N'] }, // Prerrequisito: Taller de Prog.
-            ],
-            5: [
-                { id: '100000I57N', name: 'Taller de programación web', prerequisites: ['100000I55N'] }, // Prerrequisito: POO
-            ],
-            6: [
-                // Cursos con múltiples prerrequisitos
-                { id: '100000SI58', name: 'Hojas de estilo avanzado', prerequisites: ['100000I57N'] },
-                { id: '100000SI57', name: 'Marcos de desarrollo web', prerequisites: ['100000I57N'] },
-            ],
-            7: [
-                // Prerrequisito múltiple
-                { id: '100000ST61', name: 'Desarrollo web integrado', prerequisites: ['100000SI58','100000SI57'] },
-            ]
-        };
-
+    <script th:inline="javascript">
+        /*<![CDATA[*/        
+        const cursosPorCiclo = /*[[${cursosPorCiclo}]]*/ {};
+        /*]]>*/
 
         const STORAGE_KEY = 'demo_completed_courses';
         let completedCourses = {}; // Objeto que guarda el estado, ej: { '100000I0N2': true }
-
-        // --- 3. FUNCIONES DE LÓGICA (Simulando React) ---
 
         /** Carga el estado desde localStorage */
         function loadData() {
