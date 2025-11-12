@@ -20,7 +20,7 @@ public class CursoViewController {
         this.demoService = demoService;
     }
     
- // Redirigir la raíz "/" hacia "/cursos"
+    // Redirigir la raíz "/" hacia "/cursos"
     @GetMapping("/")
     public String redirectToCursos() {
         return "redirect:/cursos";
@@ -78,7 +78,8 @@ public class CursoViewController {
     }
     
     @GetMapping("/cursos/avance")
-    public String verAvanceDemo() {
+    public String verAvanceDemo(Model model) {
+        model.addAttribute("cursosPorCiclo", demoService.getCursosAgrupadosPorCiclo());
         return "cursos-avance-demo";
     }
 }
