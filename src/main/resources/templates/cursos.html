@@ -161,6 +161,7 @@
         }
     </style>
 </head>
+
 <body>
 
 	<nav>
@@ -193,8 +194,7 @@
                        class="seccion-checkbox"
                        th:value="${seccion.seccion}"
                        th:data-horario="${#strings.listJoin(seccion.horario, '|')}"
-                       th:data-nombre="${curso.nombre + ' - Sección ' + seccion.seccion}"
-                       onchange="toggleSeccion(this)">
+                       th:data-nombre="${curso.nombre + ' - Sección ' + seccion.seccion}">
                 <div class="docente">Sección: <span th:text="${seccion.seccion}"></span> - <span th:text="${seccion.docente}"></span></div>
                 <p class="horario" th:each="h : ${seccion.horario}" th:text="${h}"></p>
             </div>
@@ -207,43 +207,35 @@
     </div>
 
     <script>
-        let seccionesSeleccionadas = new Set();
-
-        function toggleSeccion(checkbox) {
-            const seccionDiv = checkbox.parentElement;
-            const seccionData = {
-                codigo: checkbox.value,
-                horarios: checkbox.getAttribute('data-horario').split('|'),
-                nombre: checkbox.getAttribute('data-nombre')
-            };
-
-            if (checkbox.checked) {
-                seccionDiv.classList.add('selected');
-                seccionesSeleccionadas.add(seccionData);
-            } else {
-                seccionDiv.classList.remove('selected');
-                seccionesSeleccionadas.delete(seccionData);
-            }
-        }
+        // Se elimina: let seccionesSeleccionadas = new Set();
+        // Se elimina: function toggleSeccion(checkbox) { ... }
 
         function actualizarHorario() {
-            const codigos = Array.from(seccionesSeleccionadas).map(s => s.codigo);
+            // 1. Obtener TODOS los checkboxes marcados AHORA MISMO
+            const checkboxes = document.querySelectorAll('.seccion-checkbox:checked');
             
+            // 2. Mapearlos a sus códigos (values)
+            const codigos = Array.from(checkboxes).map(cb => cb.value);
+            
+            // 3. Enviar la lista COMPLETA al backend
             fetch('/api/cursos/seleccion', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(codigos)
+                body: JSON.stringify(codigos) // Envía la lista completa
             })
             .then(response => response.json())
             .then(data => {
                 if (data.mensajes && data.mensajes.length > 0) {
                     alert('Advertencias: ' + data.mensajes.join('\n'));
                 }
-                alert('Horario actualizado correctamente!');
-                // Redirigir al horario
-                window.location.href = '/horario';
+                
+                // Solo redirigir si la operación fue exitosa
+                if (data.success) {
+                    alert('Horario actualizado correctamente!');
+                    window.location.href = '/horario';
+                }
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -266,13 +258,7 @@
                             if (checkbox) {
                                 checkbox.checked = true;
                                 checkbox.parentElement.classList.add('selected');
-                                // Reconstruir el objeto seccionData
-                                const seccionData = {
-                                    codigo: seccion.seccion,
-                                    horarios: seccion.horario,
-                                    nombre: seccion.seccion // Podríamos mejorar esto
-                                };
-                                seccionesSeleccionadas.add(seccionData);
+                                // Ya no es necesario gestionar el 'Set' local
                             }
                         });
                     }

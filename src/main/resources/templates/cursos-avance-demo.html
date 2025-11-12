@@ -171,14 +171,56 @@
             </div>
     </div>
 
+<<<<<<< HEAD
     <script th:inline="javascript">
         /*<![CDATA[*/        
         const cursosPorCiclo = /*[[${cursosPorCiclo}]]*/ {};
         /*]]>*/
+=======
+<script>
+    // --- DATOS TEMPORALES ---
+    // Mapa de cursos organizados por ciclo. Cada curso tiene un ID, nombre y lista de prerrequisitos.
+    // Más adelante estos datos se cargarán dinámicamente desde una fuente externa (data/courses).
+    const cursosPorCiclo = {
+        1: [
+            { id: '100000I0N2', name: 'Matemática I', prerequisites: [] },
+            { id: '100000I07N', name: 'Principio de Algoritmos', prerequisites: [] },
+            { id: '100000N09I', name: 'Individuo y Medio Ambiente', prerequisites: [] },
+        ],
+        2: [
+            { id: '100000N06I', name: 'Problemas y desafíos...', prerequisites: [] },
+            { id: '100000I13N', name: 'Estadística descriptiva', prerequisites: [] },
+            { id: '100000I0N3', name: 'Matemática II', prerequisites: ['100000I0N2'] }, // depende de Matemática I
+        ],
+        3: [
+            { id: '100000I0N6', name: 'Cálculo I', prerequisites: ['100000I0N3'] }, // depende de Matemática II
+            { id: '100000I50N', name: 'Taller de programación', prerequisites: ['100000I07N'] }, // depende de Principio de Algoritmos
+        ],
+        4: [
+            { id: '100000I1N0', name: 'Cálculo II', prerequisites: ['100000I0N6'] },
+            { id: '100000I55N', name: 'Programación orientada a objetos', prerequisites: ['100000I50N'] },
+        ],
+        5: [
+            { id: '100000I57N', name: 'Taller de programación web', prerequisites: ['100000I55N'] },
+        ],
+        6: [
+            // Ejemplo con múltiples prerrequisitos
+            { id: '100000SI58', name: 'Hojas de estilo avanzado', prerequisites: ['100000I57N'] },
+            { id: '100000SI57', name: 'Marcos de desarrollo web', prerequisites: ['100000I57N'] },
+        ],
+        7: [
+            // Curso desbloqueado solo si se completan ambos cursos previos
+            { id: '100000ST61', name: 'Desarrollo web integrado', prerequisites: ['100000SI58','100000SI57'] },
+        ]
+    };
 
-        const STORAGE_KEY = 'demo_completed_courses';
-        let completedCourses = {}; // Objeto que guarda el estado, ej: { '100000I0N2': true }
+    const STORAGE_KEY = 'demo_completed_courses'; // Clave para localStorage
+    let completedCourses = {}; // Estructura: { 'idCurso': true } indica cursos completados
+>>>>>>> 328cbc3d2dc1de81738f5bd6f6cee6f0e7ceca12
 
+    // --- FUNCIONES DE ESTADO Y LÓGICA ---
+
+<<<<<<< HEAD
         /** Carga el estado desde localStorage */
         function loadData() {
             try {
@@ -187,137 +229,132 @@
             } catch (e) {
                 console.error('Failed to load saved data:', e);
                 completedCourses = {};
+=======
+    /** Carga el estado desde localStorage */
+    function loadData() {
+        try {
+            const json = localStorage.getItem(STORAGE_KEY);
+            completedCourses = json ? JSON.parse(json) : {};
+        } catch (e) {
+            console.error('Failed to load saved data:', e);
+            completedCourses = {};
+        }
+    }
+
+    /** Guarda el estado actual en localStorage */
+    function saveData() {
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(completedCourses));
+        } catch (e) {
+            console.error('Failed to save course state:', e);
+        }
+    }
+
+    /** Calcula qué cursos están desbloqueados según los prerrequisitos completados */
+    function calculateUnlockedCourses() {
+        const newUnlocked = {};
+        for (const ciclo in cursosPorCiclo) {
+            for (const course of cursosPorCiclo[ciclo]) {
+                // Un curso se considera desbloqueado si todos sus prerrequisitos están en completedCourses
+                const allPrereqsMet = course.prerequisites.every(
+                    (prereqId) => completedCourses[prereqId]
+                );
+                if (allPrereqsMet) newUnlocked[course.id] = true;
+>>>>>>> 328cbc3d2dc1de81738f5bd6f6cee6f0e7ceca12
             }
         }
+        return newUnlocked;
+    }
 
-        /** Guarda el estado en localStorage */
-        function saveData() {
-            try {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(completedCourses));
-            } catch (e) {
-                console.error('Failed to save course state:', e);
-            }
-        }
+    /** Marca o desmarca un curso como completado y actualiza el estado */
+    function handleCourseToggle(courseId) {
+        completedCourses[courseId] = !completedCourses[courseId];
+        saveData();
+        renderApp();
+    }
 
-
-        function calculateUnlockedCourses() {
-            const newUnlocked = {};
-            // Itera sobre todos los ciclos y cursos
-            for (const ciclo in cursosPorCiclo) {
-                for (const course of cursosPorCiclo[ciclo]) {
-                    // Verifica si *todos* los prerrequisitos están en 'completedCourses'
-                    const allPrereqsMet = course.prerequisites.every(
-                        (prereqId) => completedCourses[prereqId]
-                    );
-                    
-                    if (allPrereqsMet) {
-                        newUnlocked[course.id] = true;
-                    }
-                }
-            }
-            return newUnlocked;
-        }
-
-
-        function handleCourseToggle(courseId) {
-            // Invierte el estado de completado
-            completedCourses[courseId] = !completedCourses[courseId];
-            
-            saveData(); // Guarda el nuevo estado
-            renderApp(); // Vuelve a dibujar toda la UI con el estado actualizado
-        }
-        
-
-        function handleReset() {
-            if (confirm('¿Estás seguro de que quieres borrar tu progreso?')) {
-                localStorage.removeItem(STORAGE_KEY);
-                completedCourses = {};
-                renderApp();
-            }
-        }
-
-
-        function renderApp() {
-            const container = document.getElementById('scroll-container');
-            container.innerHTML = ''; // Limpia el contenedor
-
-            // 1. Calcula el estado de los cursos desbloqueados
-            const unlockedCourses = calculateUnlockedCourses();
-
-            // 2. Itera sobre los datos y crea el HTML
-            Object.entries(cursosPorCiclo).forEach(([cicloNum, courses]) => {
-                
-                // --- Crea la Columna ---
-                const columnEl = document.createElement('div');
-                columnEl.className = 'column';
-
-                // --- Crea el Título del Ciclo ---
-                const titleEl = document.createElement('h2');
-                titleEl.className = 'ciclo-title';
-                titleEl.textContent = `Ciclo ${cicloNum}`;
-                columnEl.appendChild(titleEl);
-
-
-                const innerScrollEl = document.createElement('div');
-                innerScrollEl.className = 'inner-scroll';
-
-
-                courses.forEach(course => {
-                    const courseBlockEl = document.createElement('div');
-                    
-                    // Define el estado visual
-                    const isCompleted = !!completedCourses[course.id];
-                    // Un curso está "desbloqueado" si sus prerrequisitos están cumplidos O si no tiene prerrequisitos
-                    const isUnlocked = !!unlockedCourses[course.id] || course.prerequisites.length === 0;
-
-                    // Aplica las clases CSS correctas
-                    courseBlockEl.className = 'course-block';
-                    if (isCompleted) {
-                        courseBlockEl.classList.add('completed');
-                    } else if (isUnlocked) {
-                        courseBlockEl.classList.add('unlocked');
-                    } else {
-                        courseBlockEl.classList.add('locked');
-                    }
-
-                    // Añade el nombre del curso
-                    const textEl = document.createElement('div');
-                    textEl.className = 'course-text';
-                    textEl.textContent = course.name;
-                    courseBlockEl.appendChild(textEl);
-
-                    // Si está bloqueado, añade el texto "Bloqueado"
-                    if (!isUnlocked) {
-                        const lockTextEl = document.createElement('div');
-                        lockTextEl.className = 'lock-text';
-                        lockTextEl.textContent = 'Bloqueado';
-                        courseBlockEl.appendChild(lockTextEl);
-                    }
-
-                    // Añade el evento de clic SÓLO si está desbloqueado
-                    if (isUnlocked) {
-                        courseBlockEl.onclick = () => handleCourseToggle(course.id);
-                    }
-
-                    innerScrollEl.appendChild(courseBlockEl);
-                });
-                
-                columnEl.appendChild(innerScrollEl);
-                container.appendChild(columnEl);
-            });
-        }
-
-
-        document.addEventListener('DOMContentLoaded', () => {
-            // Asigna el evento al botón de reset
-            document.getElementById('reset-storage').onclick = handleReset;
-            
-            // Carga el estado inicial
-            loadData();
-            // Dibuja la aplicación por primera vez
+    /** Elimina todo el progreso guardado */
+    function handleReset() {
+        if (confirm('¿Estás seguro de que quieres borrar tu progreso?')) {
+            localStorage.removeItem(STORAGE_KEY);
+            completedCourses = {};
             renderApp();
-        });
+        }
+    }
 
-    </script>
+    /** Renderiza la UI de los cursos según el estado actual */
+    function renderApp() {
+        const container = document.getElementById('scroll-container');
+        container.innerHTML = ''; // Limpia el contenedor principal
+
+        const unlockedCourses = calculateUnlockedCourses(); // Determina qué cursos se pueden seleccionar
+
+        // Genera las columnas de ciclos
+        Object.entries(cursosPorCiclo).forEach(([cicloNum, courses]) => {
+            const columnEl = document.createElement('div');
+            columnEl.className = 'column';
+
+            // Encabezado del ciclo
+            const titleEl = document.createElement('h2');
+            titleEl.className = 'ciclo-title';
+            titleEl.textContent = `Ciclo ${cicloNum}`;
+            columnEl.appendChild(titleEl);
+
+            const innerScrollEl = document.createElement('div');
+            innerScrollEl.className = 'inner-scroll';
+
+            // Render de cada curso dentro del ciclo
+            courses.forEach(course => {
+                const courseBlockEl = document.createElement('div');
+                const isCompleted = !!completedCourses[course.id];
+                const isUnlocked = !!unlockedCourses[course.id] || course.prerequisites.length === 0;
+
+                // Define clase visual según estado del curso
+                courseBlockEl.className = 'course-block';
+                if (isCompleted) {
+                    courseBlockEl.classList.add('completed');
+                } else if (isUnlocked) {
+                    courseBlockEl.classList.add('unlocked');
+                } else {
+                    courseBlockEl.classList.add('locked');
+                }
+
+                // Nombre del curso
+                const textEl = document.createElement('div');
+                textEl.className = 'course-text';
+                textEl.textContent = course.name;
+                courseBlockEl.appendChild(textEl);
+
+                // Indicación visual si está bloqueado
+                if (!isUnlocked) {
+                    const lockTextEl = document.createElement('div');
+                    lockTextEl.className = 'lock-text';
+                    lockTextEl.textContent = 'Bloqueado';
+                    courseBlockEl.appendChild(lockTextEl);
+                }
+
+                // Solo permite clic si el curso está desbloqueado
+                if (isUnlocked) {
+                    courseBlockEl.onclick = () => handleCourseToggle(course.id);
+                }
+
+                innerScrollEl.appendChild(courseBlockEl);
+            });
+
+            columnEl.appendChild(innerScrollEl);
+            container.appendChild(columnEl);
+        });
+    }
+
+    // --- INICIALIZACIÓN ---
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('reset-storage').onclick = handleReset;
+        loadData();   // Recupera el progreso guardado
+        renderApp();  // Dibuja la interfaz inicial
+    });
+</script>
+
+
+    
 </body>
 </html>
