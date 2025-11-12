@@ -56,28 +56,12 @@ public class DemoService {
     }
 
     public CursoResponse getCursosPorCiclo(int ciclo) {
-        // Original "streaming filter"
-        /*
-        List<Curso> filtrados = data.getCursos().stream()
-                .filter(c -> c.getCiclo() == ciclo)
-                .toList();
-        return new CursoResponse(filtrados);
-        */
         return new CursoResponse(indexByCiclo.getOrDefault(ciclo, Collections.emptyList()));
     }
 
     public CursoResponse getCursosPorNombre(String nombre) {
         String nombreLower = nombre.toLowerCase();
 
-        // Original "streaming filter"
-        /*
-        List<Curso> filtrados = data.getCursos().stream()
-                .filter(c -> c.getNombre().toLowerCase().contains(nombreLower))
-                .toList();
-        return new CursoResponse(filtrados);
-        */
-
-        // Optimizado para map y coincidencia exacta
         if (indexByNombre.containsKey(nombreLower)) {
             return new CursoResponse(indexByNombre.get(nombreLower));
         } else {
@@ -88,14 +72,14 @@ public class DemoService {
         }
     }
 
+    // simplificación buscarcursos
     public CursoResponse buscarCursos(
             Optional<String> nombre,
             Optional<Integer> ciclo,
             Optional<String> docente,
             Optional<String> horario) {
 
-        // Forma original "streaming":
-        /*
+        // Lógica de Set/retainAll eliminada y reemplazada por streams
         List<Curso> filtrados = data.getCursos().stream()
             .filter(c -> nombre.map(n -> c.getNombre().toLowerCase().contains(n.toLowerCase())).orElse(true))
             .filter(c -> ciclo.map(ci -> c.getCiclo() == ci).orElse(true))
@@ -108,43 +92,8 @@ public class DemoService {
                         .anyMatch(s -> s.getHorario().stream().anyMatch(hr -> hr.contains(h)))
             ).orElse(true))
             .toList();
+            
         return new CursoResponse(filtrados);
-        */
-
-        // Alternativa usando indexes preindexados
-        Set<Curso> result = new HashSet<>(data.getCursos());
-
-        if (ciclo.isPresent()) {
-            result.retainAll(indexByCiclo.getOrDefault(ciclo.get(), Collections.emptyList()));
-        }
-        if (nombre.isPresent()) {
-            String key = nombre.get().toLowerCase();
-            // substring search requires fallback to scan
-            Set<Curso> byName = indexByNombre.containsKey(key)
-                    ? new HashSet<>(indexByNombre.get(key))
-                    : data.getCursos().stream()
-                          .filter(c -> c.getNombre().toLowerCase().contains(key))
-                          .collect(Collectors.toSet());
-            result.retainAll(byName);
-        }
-        if (docente.isPresent()) {
-            String key = docente.get().toLowerCase();
-            Set<Curso> byDoc = indexByDocente.entrySet().stream()
-                    .filter(e -> e.getKey().contains(key))
-                    .flatMap(e -> e.getValue().stream())
-                    .collect(Collectors.toSet());
-            result.retainAll(byDoc);
-        }
-        if (horario.isPresent()) {
-            String key = horario.get();
-            Set<Curso> byHorario = data.getCursos().stream()
-                    .filter(c -> c.getSecciones().stream()
-                            .anyMatch(s -> s.getHorario().stream().anyMatch(hr -> hr.contains(key))))
-                    .collect(Collectors.toSet());
-            result.retainAll(byHorario);
-        }
-
-        return new CursoResponse(new ArrayList<>(result));
     }
 
     public CursoResponse buscarCursosPaginado(
@@ -159,5 +108,16 @@ public class DemoService {
         int fromIndex = Math.min(page * size, filtrados.size());
         int toIndex = Math.min(fromIndex + size, filtrados.size());
         return new CursoResponse(filtrados.subList(fromIndex, toIndex));
+    }
+
+    // Explicación
+    /**
+     * Devuelve el mapa de cursos indexados por ciclo.
+     * Usado por la vista de avance de cursos.
+     *
+     * @return Un mapa donde la clave es el Nro. de ciclo y el valor es la lista de cursos.
+     */
+    public Map<Integer, List<Curso>> getCursosAgrupadosPorCiclo() {
+        return this.indexByCiclo;
     }
 }
