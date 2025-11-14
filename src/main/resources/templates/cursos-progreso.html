@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Interactiva - UTP Class Tracker</title>
+    
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5;
+        }
+
+        .safe-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background-color: #ffffff;
+            border-bottom: 1px solid #d1d1d1;
+            flex-shrink: 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .icon-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            font-size: 28px;
+            color: #333;
+            margin-right: 15px;
+        }
+
+        /* Botón de Reset añadido */
+        .reset-button {
+            margin-left: auto; /* Empuja el botón a la derecha */
+            padding: 8px 12px;
+            font-size: 0.9rem;
+            color: #fff;
+            background-color: #f44336; /* Rojo */
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .reset-button:hover {
+            background-color: #d32f2f;
+        }
+
+        .title {
+            margin: 0;
+            font-size: 1.5rem;
+            color: #333;
+        }
+
+        .scroll-container {
+            display: flex;
+            flex-direction: row;
+            overflow-x: auto;
+            flex-grow: 1;
+            background-color: #e9eef2;
+            padding: 20px;
+            gap: 16px;
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+            width: 300px;
+            flex-shrink: 0;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            max-height: 100%; 
+            box-sizing: border-box;
+        }
+
+        .ciclo-title {
+            padding: 16px;
+            margin: 0;
+            font-size: 1.2rem;
+            color: #1a1a1a;
+            border-bottom: 1px solid #e0e0e0;
+            flex-shrink: 0;
+        }
+
+        .inner-scroll {
+            overflow-y: auto;
+            padding: 16px;
+            flex-grow: 1; 
+        }
+
+        .course-block {
+            padding: 16px;
+            margin-bottom: 12px;
+            border-radius: 6px;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+            min-height: 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .course-text {
+            /* ... */
+        }
+        
+        .lock-text {
+            font-size: 0.8rem;
+            text-align: right;
+            font-style: italic;
+            font-weight: 400;
+            margin-top: 10px;
+            opacity: 0.9;
+        }
+        
+        /* --- Estados Visuales (controlados por JS) --- */
+
+        .course-block.locked {
+            background-color: #BDBDBD;
+            cursor: not-allowed;
+        }
+
+        .course-block.unlocked {
+            background-color: #03A9F4;
+            cursor: pointer; /* Cambiado a pointer */
+        }
+        .course-block.unlocked:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(3, 169, 244, 0.3);
+        }
+
+        .course-block.completed {
+            background-color: #4CAF50;
+            cursor: pointer; /* Cambiado a pointer */
+        }
+        .course-block.completed:hover {
+             transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="safe-container">
+        
+        <div class="header">
+            <button class="icon-button" aria-label="Toggle Menu">
+                &#9776;
+            </button>
+            <h1 class="title">UTP Class Tracker (Demo JS)</h1>
+            <button class="reset-button" id="reset-storage">Reset Progreso</button>
+        </div>
+
+        <div class="scroll-container" id="scroll-container">
+            </div>
+    </div>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const cursosPorCiclo = /*[[${cursosPorCiclo}]]*/ {};
+        /*]]>*/
+
+        const STORAGE_KEY = 'demo_completed_courses';
+        let completedCourses = {}; // Objeto que guarda el estado, ej: { '100000I0N2': true }
+
+        /** Carga el estado desde localStorage */
+        function loadData() {
+            try {
+                const json = localStorage.getItem(STORAGE_KEY);
+                completedCourses = json ? JSON.parse(json) : {};
+            } catch (e) {
+                console.error('Failed to load saved data:', e);
+                completedCourses = {};
+            }
+        }
+
+        /** Guarda el estado en localStorage */
+        function saveData() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(completedCourses));
+            } catch (e) {
+                console.error('Failed to save course state:', e);
+            }
+        }
+
+
+        function calculateUnlockedCourses() {
+            const newUnlocked = {};
+            // Itera sobre todos los ciclos y cursos
+            for (const ciclo in cursosPorCiclo) {
+                for (const course of cursosPorCiclo[ciclo]) {
+                    // Verifica si *todos* los prerrequisitos están en 'completedCourses'
+                    const allPrereqsMet = course.prerequisites.every(
+                        (prereqId) => completedCourses[prereqId]
+                    );
+                    
+                    if (allPrereqsMet) {
+                        newUnlocked[course.id] = true;
+                    }
+                }
+            }
+            return newUnlocked;
+        }
+
+
+        function handleCourseToggle(courseId) {
+            // Invierte el estado de completado
+            completedCourses[courseId] = !completedCourses[courseId];
+            
+            saveData(); // Guarda el nuevo estado
+            renderApp(); // Vuelve a dibujar toda la UI con el estado actualizado
+        }
+        
+
+        function handleReset() {
+            if (confirm('¿Estás seguro de que quieres borrar tu progreso?')) {
+                localStorage.removeItem(STORAGE_KEY);
+                completedCourses = {};
+                renderApp();
+            }
+        }
+
+
+        function renderApp() {
+            const container = document.getElementById('scroll-container');
+            container.innerHTML = ''; // Limpia el contenedor
+
+            // 1. Calcula el estado de los cursos desbloqueados
+            const unlockedCourses = calculateUnlockedCourses();
+
+            // 2. Itera sobre los datos y crea el HTML
+            Object.entries(cursosPorCiclo).forEach(([cicloNum, courses]) => {
+                
+                // --- Crea la Columna ---
+                const columnEl = document.createElement('div');
+                columnEl.className = 'column';
+
+                // --- Crea el Título del Ciclo ---
+                const titleEl = document.createElement('h2');
+                titleEl.className = 'ciclo-title';
+                titleEl.textContent = `Ciclo ${cicloNum}`;
+                columnEl.appendChild(titleEl);
+
+
+                const innerScrollEl = document.createElement('div');
+                innerScrollEl.className = 'inner-scroll';
+
+
+                courses.forEach(course => {
+                    const courseBlockEl = document.createElement('div');
+                    
+                    // Define el estado visual
+                    const isCompleted = !!completedCourses[course.id];
+                    // Un curso está "desbloqueado" si sus prerrequisitos están cumplidos O si no tiene prerrequisitos
+                    const isUnlocked = !!unlockedCourses[course.id] || course.prerequisites.length === 0;
+
+                    // Aplica las clases CSS correctas
+                    courseBlockEl.className = 'course-block';
+                    if (isCompleted) {
+                        courseBlockEl.classList.add('completed');
+                    } else if (isUnlocked) {
+                        courseBlockEl.classList.add('unlocked');
+                    } else {
+                        courseBlockEl.classList.add('locked');
+                    }
+
+                    // Añade el nombre del curso
+                    const textEl = document.createElement('div');
+                    textEl.className = 'course-text';
+                    textEl.textContent = course.name;
+                    courseBlockEl.appendChild(textEl);
+
+                    // Si está bloqueado, añade el texto "Bloqueado"
+                    if (!isUnlocked) {
+                        const lockTextEl = document.createElement('div');
+                        lockTextEl.className = 'lock-text';
+                        lockTextEl.textContent = 'Bloqueado';
+                        courseBlockEl.appendChild(lockTextEl);
+                    }
+
+                    // Añade el evento de clic SÓLO si está desbloqueado
+                    if (isUnlocked) {
+                        courseBlockEl.onclick = () => handleCourseToggle(course.id);
+                    }
+
+                    innerScrollEl.appendChild(courseBlockEl);
+                });
+                
+                columnEl.appendChild(innerScrollEl);
+                container.appendChild(columnEl);
+            });
+        }
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Asigna el evento al botón de reset
+            document.getElementById('reset-storage').onclick = handleReset;
+            
+            // Carga el estado inicial
+            loadData();
+            // Dibuja la aplicación por primera vez
+            renderApp();
+        });
+
+    </script>
+</body>
+</html>
