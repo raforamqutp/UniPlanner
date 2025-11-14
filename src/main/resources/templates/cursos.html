@@ -159,111 +159,395 @@
                 margin: 1rem;
             }
         }
+		.actions {
+		    padding: 10px;
+		    margin-bottom: 10px;
+		  }
+		  .btn {
+		    padding: 8px 12px;
+		    font-size: 0.9rem;
+		    border: none;
+		    border-radius: 4px;
+		    cursor: pointer;
+		    margin-right: 5px;
+		  }
+		  .btn-success {
+		    color: #fff;
+		    background-color: #28a745;
+		  }
+		  #form-bloque-personalizado {
+		    margin-top: 15px;
+		    padding: 15px;
+		    background: #f9f9f9;
+		    border-radius: 8px;
+		    border: 1px solid #eee;
+		  }
+		  #form-bloque-personalizado input,
+		  #form-bloque-personalizado select {
+		    margin-right: 10px;
+		    padding: 8px;
+		    border: 1px solid #ccc;
+		    border-radius: 4px;
+		  }
     </style>
 </head>
 
 <body>
+<nav>
+  <a th:href="@{/cursos}">Volver a Cursos</a>
+  <a th:href="@{/horario}">Actualizar Horario</a>
+</nav>
 
-	<nav>
-	    <a th:href="@{/cursos}">Todos</a>
-	    <a th:href="@{/cursos/ciclo/6}">Ciclo 6</a>
-	    <a th:href="@{/cursos/ciclo/7}">Ciclo 7</a>
-	    <a th:href="@{/cursos/ciclo/8}">Ciclo 8</a>
-	    <a th:href="@{/horario}">Ver Horario</a>
-	</nav>
+<div class="header">
+  <h1>Mi Horario</h1>
+  <p id="statusMessage">Cargando horario...</p>
+</div>
 
-    <header>
-        <h1 th:text="${titulo}">Cursos</h1>
-    </header>
+<div class="actions">
+  <button class="btn" onclick="limpiarHorario()">Limpiar Horario</button>
+  <button class="btn btn-success" onclick="actualizarDesdeBackend()">Actualizar desde Servidor</button>
+  <button class="btn" onclick="toggleDebug()">Mostrar Debug</button>
+</div>
+
+<form id="form-bloque-personalizado" class="actions">
+    <strong>Añadir Bloque Personalizado:</strong>
+    <input type="text" id="bloque-nombre" placeholder="Nombre (ej. Almuerzo)" required>
+    <select id="bloque-dia" required>
+        <option value="Lunes">Lunes</option>
+        <option value="Martes">Martes</option>
+        <option value="Miercoles">Miércoles</option>
+        <option value="Jueves">Jueves</option>
+        <option value="Viernes">Viernes</option>
+        <option value="Sabado">Sábado</option>
+    </select>
+    <input type="time" id="bloque-inicio" step="1800" required>
+    <input type="time" id="bloque-fin" step="1800" required>
+    <button type="submit" class="btn">Añadir Bloque</button>
+</form>
+<div id="debugPanel" class="debug-info" style="display:none;">
+  <h3>Información de Debug</h3>
+  <div id="debugContent"></div>
+</div>
+
+<div class="schedule-container">
+  <div class="schedule-grid" id="scheduleGrid"></div>
+</div>
+
+<script>
+class HorarioManager {
+  // ... (TODA LA CLASE HorarioManager ES IDÉNTICA) ...
+  constructor() {
+    this.daysCanonical = ["Lunes","Martes","Miercoles","Jueves","Viernes","Sabado","Domingo"];
+    this.grid = document.getElementById('scheduleGrid');
+    this.times = this._generarSlots("07:00", "22:00", 30);
+    this.debugContent = document.getElementById('debugContent');
+    this._buildGrid();
+    this._loadFromApi();
+  }
+
+  _log(...args){ 
+    console.log(...args); 
+    if(this.debugContent) {
+      this.debugContent.innerHTML += args.join(' ') + '<br>';
+    }
+  }
+
+  _generarSlots(start, end, stepMin){
+    const parse = t=>{ 
+        const [h,m]=t.split(':').map(Number); 
+        return h*60+m; 
+    };
+    const pad = n => String(n).padStart(2,'0');
+    const slots=[];
+    let cur = parse(start);
+    const endM = parse(end);
+    while(cur < endM){
+      const next = cur + stepMin;
+      const hh = pad(Math.floor(cur/60)); 
+      const mm = pad(cur%60);
+      const nh = pad(Math.floor(next/60)); 
+      const nm = pad(next%60);
+      slots.push({ 
+          time: `${hh}:${mm}`, 
+          display: `${hh}:${mm} - ${nh}:${nm}`, 
+          startM: cur,
+          endM: next
+      });
+      cur = next;
+    }
+    return slots;
+  }
+
+  _normalizeDay(d){
+    if(!d) return d;
+    const lower = d.toLowerCase();
+    const dayMap = {
+        'lunes': 'Lunes',
+        'martes': 'Martes', 
+        'miercoles': 'Miercoles',
+        'miércoles': 'Miercoles',
+        'jueves': 'Jueves',
+        'viernes': 'Viernes',
+        'sabado': 'Sabado',
+        'sábado': 'Sabado',
+        'domingo': 'Domingo'
+    };
+    return dayMap[lower] || d;
+  }
+
+  _buildGrid(){
+    this.grid.innerHTML = '';
+    // corner
+    this.grid.appendChild(this._celda('schedule-corner','Hora \\ Día'));
+    // headers
+    this.daysCanonical.forEach(d => this.grid.appendChild(this._celda('schedule-header', d)));
+    // rows
+    this.times.forEach(slot => {
+      const claseHora = slot.time.endsWith(':00') ? 'schedule-time bold-hour' : 'schedule-time';
+      this.grid.appendChild(this._celda(claseHora, slot.display));
+      // cells per day with data attributes
+      this.daysCanonical.forEach(day => {
+        const cel = this._celda('schedule-cell','');
+        cel.setAttribute('data-day', day);
+        cel.setAttribute('data-time', slot.time);
+        cel.setAttribute('data-start-min', slot.startM);
+        cel.setAttribute('data-end-min', slot.endM);
+        this.grid.appendChild(cel);
+      });
+    });
+  }
+
+  _celda(clase, text){
+    const d = document.createElement('div');
+    d.className = clase;
+    d.textContent = text;
+    return d;
+  }
+
+  _timeToMinutes(t){
+    if(!t) return NaN;
+    const parts = String(t).split(':').map(Number);
+    if(parts.length >=2) return parts[0]*60 + parts[1];
+    return NaN;
+  }
+
+  // carga inicial
+  async _loadFromApi(){
+    this._setStatus('Cargando horario...');
+    try {
+      const res = await fetch('/horario/api');
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      this._log('=== DATOS RECIBIDOS DEL API ===');
+      this._log('Bloques recibidos:', data.bloques ? data.bloques.length : 0);
+      this._log('Contenido:', JSON.stringify(data.bloques, null, 2));
+      
+      if(!data || !Array.isArray(data.bloques) || data.bloques.length===0){
+        this._setStatus('No hay cursos en el horario');
+        return;
+      }
+
+      this._renderBloques(data.bloques);
+      this._setStatus(`Horario cargado (${data.bloques.length} cursos)`);
+    } catch(e){
+      console.error('Error al obtener horario', e);
+      this._setStatus('Error de conexión con servidor');
+    }
+  }
+
+  _setStatus(msg){ 
+    const el = document.getElementById('statusMessage'); 
+    if(el) el.textContent = msg; 
+  }
+
+  // Renderiza bloques
+  _renderBloques(bloques){
+    this._clearVisual();
+    this._log('=== RENDERIZANDO BLOQUES ===');
+    bloques.forEach((b, index) => {
+      this._log(`Bloque ${index + 1}:`, JSON.stringify(b));
+      this._renderBloque(b);
+    });
+  }
+
+  _clearVisual(){
+    this.grid.querySelectorAll('.course-block').forEach(n => n.remove());
+    this.grid.querySelectorAll('.schedule-cell').forEach(c => { 
+        c.innerHTML=''; 
+        c.style.background = '';
+    });
+  }
+
+  _renderBloque(b){
+    const rawDay = b.dia || b.day || '';
+    const dayNorm = this._normalizeDay(rawDay);
     
-    <form th:action="@{/cursos/buscar}" method="get" style="padding:1rem; background:#f1f5f9; border-radius:8px; margin:1rem;">
-    	<input type="text" name="nombre" placeholder="Nombre del curso">
-    	<input type="number" name="ciclo" placeholder="Ciclo">
-    	<input type="text" name="docente" placeholder="Docente">
-    	<input type="text" name="horario" placeholder="Horario">
-    	<button type="submit">Buscar</button>
-	</form>
+    this._log(`Procesando bloque: ${rawDay} -> ${dayNorm}`);
+    this._log(`Horario: ${b.horaInicio} - ${b.horaFin}`);
 
-    <div class="container">
-        <div class="card" th:each="curso : ${cursos}">
-            <div class="curso-nombre" th:text="${curso.nombre}"></div>
-            <div class="ciclo">Ciclo: <span th:text="${curso.ciclo}"></span></div>
+    const startMin = this._timeToMinutes(this._shortenTime(b.horaInicio));
+    const endMin = this._timeToMinutes(this._shortenTime(b.horaFin));
+    
+    this._log(`Tiempos en minutos: ${startMin} - ${endMin}`);
 
-            <div class="seccion" th:each="seccion : ${curso.secciones}">
-                <input type="checkbox" 
-                       class="seccion-checkbox"
-                       th:value="${seccion.seccion}"
-                       th:data-horario="${#strings.listJoin(seccion.horario, '|')}"
-                       th:data-nombre="${curso.nombre + ' - Sección ' + seccion.seccion}">
-                <div class="docente">Sección: <span th:text="${seccion.seccion}"></span> - <span th:text="${seccion.docente}"></span></div>
-                <p class="horario" th:each="h : ${seccion.horario}" th:text="${h}"></p>
-            </div>
-        </div>
-    </div>
+    if(isNaN(startMin) || isNaN(endMin) || endMin <= startMin) {
+      this._log('ERROR: Horario inválido en bloque', b);
+      return;
+    }
 
-    <div class="actions">
-        <button class="btn" onclick="verHorario()">Ver Horario Actual</button>
-        <button class="btn btn-success" onclick="actualizarHorario()">Actualizar Horario</button>
-    </div>
+    const selector = `.schedule-cell[data-day="${dayNorm}"]`;
+    const dayCells = Array.from(this.grid.querySelectorAll(selector));
+    
+    this._log(`Celdas encontradas para ${dayNorm}: ${dayCells.length}`);
 
-    <script>
-        // Se elimina: let seccionesSeleccionadas = new Set();
-        // Se elimina: function toggleSeccion(checkbox) { ... }
+    if(dayCells.length === 0){
+      this._log(`ERROR: No hay celdas para día ${dayNorm}`);
+      return;
+    }
 
-        function actualizarHorario() {
-            // 1. Obtener TODOS los checkboxes marcados AHORA MISMO
-            const checkboxes = document.querySelectorAll('.seccion-checkbox:checked');
-            
-            // 2. Mapearlos a sus códigos (values)
-            const codigos = Array.from(checkboxes).map(cb => cb.value);
-            
-            // 3. Enviar la lista COMPLETA al backend
-            fetch('/api/cursos/seleccion', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(codigos) // Envía la lista completa
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.mensajes && data.mensajes.length > 0) {
-                    alert('Advertencias: ' + data.mensajes.join('\n'));
-                }
-                
-                // Solo redirigir si la operación fue exitosa
-                if (data.success) {
-                    alert('Horario actualizado correctamente!');
-                    window.location.href = '/horario';
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error al actualizar el horario');
-            });
+    const cellsInRange = dayCells.filter(cell => {
+      const cellStartMin = parseInt(cell.getAttribute('data-start-min'));
+      const cellEndMin = parseInt(cell.getAttribute('data-end-min'));
+      return cellStartMin < endMin && cellEndMin > startMin;
+    });
+
+    this._log(`Celdas en rango: ${cellsInRange.length}`);
+
+    if(cellsInRange.length === 0){
+      this._log('ERROR: Ninguna celda encontrada en el rango');
+      return;
+    }
+
+    const blockEl = document.createElement('div');
+    blockEl.className = 'course-block';
+    
+    // --- ESTILO VISUAL EXTRA PARA BLOQUES PERSONALES ---
+    if(b.nombreCurso === "Personal") {
+        blockEl.style.backgroundColor = "#ffc107"; // Un color ámbar
+        blockEl.style.color = "#333";
+    }
+    // --- FIN ESTILO EXTRA ---
+
+    const nombreCurso = b.nombreCurso || b.nombre || 'Curso';
+    const docente = b.docente || 'Docente no especificado';
+    const codigoSeccion = b.codigoSeccion || 'Código no disponible';
+    const horaInicio = this._shortenTime(b.horaInicio);
+    const horaFin = this._shortenTime(b.horaFin);
+
+    blockEl.innerHTML = `
+      <div class="course-title">${this._truncateText(nombreCurso, 40)}</div>
+      <div class="course-info">${this._truncateText(docente, 35)}</div>
+      <div class="course-info">Sección: ${codigoSeccion}</div>
+      <div class="course-time">${horaInicio} - ${horaFin}</div>
+    `;
+
+    blockEl.title = `${nombreCurso}\nDocente: ${docente}\nSección: ${codigoSeccion}\nHorario: ${horaInicio} - ${horaFin}`;
+
+    const firstCell = cellsInRange[0];
+    const lastCell = cellsInRange[cellsInRange.length - 1];
+
+    const top = firstCell.offsetTop;
+    const left = firstCell.offsetLeft;
+    const height = (lastCell.offsetTop + lastCell.offsetHeight) - firstCell.offsetTop;
+    const width = firstCell.offsetWidth - 4;
+
+    blockEl.style.position = 'absolute';
+    blockEl.style.top = `${top}px`;
+    blockEl.style.left = `${left}px`;
+    blockEl.style.width = `${width}px`;
+    blockEl.style.height = `${height}px`;
+
+    this.grid.appendChild(blockEl);
+    this._log(`✓ Bloque renderizado en ${dayNorm} ${horaInicio}-${horaFin}`);
+  }
+
+  _truncateText(text, maxLength) {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength - 3) + '...';
+  }
+
+  _shortenTime(t){
+    if(!t) return t;
+    if(typeof t !== 'string') t = String(t);
+    const parts = t.split(':');
+    return parts.length >= 2 ? `${parts[0].padStart(2,'0')}:${parts[1].padStart(2,'0')}` : t;
+  }
+
+  async refresh(){
+    await this._loadFromApi();
+  }
+}
+
+let horarioManager = new HorarioManager();
+
+function actualizarDesdeBackend(){ 
+  horarioManager.refresh(); 
+}
+
+function limpiarHorario(){
+  if(!confirm('¿Seguro que quieres limpiar todo el horario?')) return;
+  fetch('/horario/api/clear', { method:'DELETE' })
+    .then(r => {
+      if(r.ok){
+        horarioManager._clearVisual();
+        document.getElementById('statusMessage').textContent = 'Horario limpiado';
+      } else {
+        alert('Error al limpiar horario');
+      }
+    }).catch(e => { 
+      alert('Error al conectar con el servidor'); 
+      console.error(e); 
+    });
+}
+
+function toggleDebug() {
+  const debugPanel = document.getElementById('debugPanel');
+  debugPanel.style.display = debugPanel.style.display === 'none' ? 'block' : 'none';
+}
+
+document.getElementById('form-bloque-personalizado').addEventListener('submit', function(e) {
+    e.preventDefault(); // Evitar que la página recargue
+    
+    const nombre = document.getElementById('bloque-nombre').value;
+    const dia = document.getElementById('bloque-dia').value;
+    const horaInicio = document.getElementById('bloque-inicio').value;
+    const horaFin = document.getElementById('bloque-fin').value;
+
+    // Validación simple de tiempo
+    if (horaInicio >= horaFin) {
+        alert('La hora de fin debe ser mayor a la hora de inicio.');
+        return;
+    }
+
+    const bloque = {
+        nombre: nombre, // El @RequestBody mapeará esto al 'nombre' del HorarioBloque
+        dia: dia,
+        horaInicio: horaInicio,
+        horaFin: horaFin,
+        nombreCurso: "Personal",
+        docente: "Personalizado",
+        codigoSeccion: "----"
+    };
+
+    fetch('/horario/api', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bloque)
+    })
+    .then(response => {
+        if (response.ok) {
+            horarioManager.refresh();
+            document.getElementById('form-bloque-personalizado').reset(); // Limpiar el formulario
+        } else {
+            alert('Error al añadir el bloque.');
         }
+    })
+    .catch(error => {
+        console.error('Error al añadir bloque:', error);
+        alert('Error de conexión al añadir bloque.');
+    });
+});
 
-        function verHorario() {
-            window.location.href = '/horario';
-        }
-
-        // Cargar selecciones existentes al cargar la página
-        document.addEventListener('DOMContentLoaded', function() {
-            fetch('/api/cursos/seleccion')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.seleccionados) {
-                        data.seleccionados.forEach(seccion => {
-                            const checkbox = document.querySelector(`input[value="${seccion.seccion}"]`);
-                            if (checkbox) {
-                                checkbox.checked = true;
-                                checkbox.parentElement.classList.add('selected');
-                                // Ya no es necesario gestionar el 'Set' local
-                            }
-                        });
-                    }
-                });
-        });
-    </script>
+</script>
 </body>
 </html>
