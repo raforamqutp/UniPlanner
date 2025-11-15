@@ -1,0 +1,38 @@
+name: Build de Spring Boot con Maven
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout del código
+      uses: actions/checkout@v4
+
+    - name: Setup JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+
+    - name: Cachear dependencias de Maven
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-
+
+    - name: Build y Test con Maven
+      run: mvn -B package --file pom.xml
+
+    - name: Subir artefacto (ejecutable .jar)
+      uses: actions/upload-artifact@v4
+      with:
+        name: uniplanner-ejecutable
+        path: target/*.jar
