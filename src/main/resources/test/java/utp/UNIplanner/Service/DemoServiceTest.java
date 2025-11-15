@@ -12,18 +12,6 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Pruebas unitarias para la clase DemoService, que simula la carga y búsqueda de cursos
- * desde un archivo JSON en la aplicación UNIplanner.
- *
- * Estas pruebas verifican que:
- * - Se carguen correctamente los cursos desde el archivo.
- * - Se puedan filtrar cursos por ciclo, nombre, docente y horario.
- * - Funcione la búsqueda combinada y la paginación de resultados.
- *
- * Ayudan a asegurar que las funciones principales del servicio trabajen como se espera.
- */
-
 @SpringBootTest
 class DemoServiceTest {
 
@@ -45,6 +33,7 @@ class DemoServiceTest {
     @Test
     void testGetCursosPorCiclo() {
         CursoResponse response = demoService.getCursosPorCiclo(1);
+        assertFalse(response.getCursos().isEmpty(), "Debería encontrar cursos del ciclo 1");
         for (Curso c : response.getCursos()) {
             assertEquals(1, c.getCiclo(), "Todos deben pertenecer al ciclo 1");
         }
@@ -52,16 +41,15 @@ class DemoServiceTest {
 
     @Test
     void testGetCursosPorNombreExacto() {
-        // asume que existe un curso llamado "Integrador"
-        CursoResponse response = demoService.getCursosPorNombre("Integrador");
+        // Buscamos un nombre exacto que SÍ existe
+        CursoResponse response = demoService.getCursosPorNombre("Matemática I"); 
         assertFalse(response.getCursos().isEmpty());
-        assertTrue(response.getCursos().stream()
-                .anyMatch(c -> c.getNombre().equalsIgnoreCase("Integrador")));
+        assertEquals("Matemática I", response.getCursos().get(0).getNombre());
     }
 
     @Test
     void testGetCursosPorNombreSubstring() {
-        CursoResponse response = demoService.getCursosPorNombre("inte");
+        CursoResponse response = demoService.getCursosPorNombre("inte"); // "integrador"
         assertFalse(response.getCursos().isEmpty());
         assertTrue(response.getCursos().stream()
                 .anyMatch(c -> c.getNombre().toLowerCase().contains("inte")));
@@ -69,41 +57,50 @@ class DemoServiceTest {
 
     @Test
     void testBuscarCursosPorDocente() {
+        // Buscamos "Ticona" (RAMIREZ TICONA,JUAN) en lugar de "García"
         CursoResponse response = demoService.buscarCursos(
                 Optional.empty(),
                 Optional.empty(),
-                Optional.of("García"),
+                Optional.of("Ticona"), 
                 Optional.empty()
         );
+        assertFalse(response.getCursos().isEmpty(), "Debería encontrar cursos por docente 'Ticona'");
         assertTrue(response.getCursos().stream()
                 .allMatch(c -> c.getSecciones().stream()
-                        .anyMatch(s -> s.getDocente().toLowerCase().contains("tico"))));
+                        .anyMatch(s -> s.getDocente().toLowerCase().contains("ticona"))));
     }
 
     @Test
     void testBuscarCursosPorHorario() {
+        // Buscamos "08:45" (Sección 7272) en lugar de "08:00"
         CursoResponse response = demoService.buscarCursos(
                 Optional.empty(),
                 Optional.empty(),
                 Optional.empty(),
-                Optional.of("08:00")
+                Optional.of("08:45") 
         );
+        assertFalse(response.getCursos().isEmpty(), "Debería encontrar cursos con horario '08:45'");
         assertTrue(response.getCursos().stream()
                 .allMatch(c -> c.getSecciones().stream()
-                        .anyMatch(s -> s.getHorario().stream().anyMatch(h -> h.contains("08:00")))));
+                        .anyMatch(s -> s.getHorario().stream().anyMatch(h -> h.contains("08:45")))));
     }
 
     @Test
     void testBuscarCursosCombinado() {
+        // Buscamos "integrador" (Curso integrador I) en ciclo 6 con docente "nieto"
         CursoResponse response = demoService.buscarCursos(
-                Optional.of("inte"),
-                Optional.of(1),
-                Optional.of("Ticona"),
+                Optional.of("integrador"),
+                Optional.of(6),
+                Optional.of("nieto"), // (NIETO VALENCIA,RENE ALONSO)
                 Optional.empty()
         );
+        
+        assertFalse(response.getCursos().isEmpty(), "Debería encontrar la combinación");
         for (Curso c : response.getCursos()) {
-            assertEquals(1, c.getCiclo());
-            assertTrue(c.getNombre().toLowerCase().contains("inte"));
+            assertEquals(6, c.getCiclo());
+            assertTrue(c.getNombre().toLowerCase().contains("integrador"));
+            assertTrue(c.getSecciones().stream()
+                .anyMatch(s -> s.getDocente().toLowerCase().contains("nieto")));
         }
     }
 
