@@ -113,3 +113,12 @@ O también ir a `Releases` y descargar la última versión.
 ![10](resources/images/8.png)
 
 ![11](resources/images/9.png)
+
+
+---
+
+## Github Actions
+
+![12](resources/images/10.png)
+
+![13](resources/images/11.png)
